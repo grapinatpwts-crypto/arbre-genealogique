@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Archivo', system-ui, sans-serif; }
+    a { color: #9A5233; text-decoration: none; } a:hover { color: #7A3F26; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #F3EDE1; color: #1F1A14; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="padding: 68px 22px 18px; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Filiation</span>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+      <h1 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 36px; line-height: 1; margin: 0">Mes arbres</h1>
+      <span style="font-size: 12.5px; color: #8A7D6D; padding-bottom: 3px">3 arbres</span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 6px 22px 0; display: flex; flex-direction: column; gap: 12px">
+    <sc-for list="{{arbres}}" as="a" hint-placeholder-count="3">
+      <div onClick="{{ a.pick }}" style="border: 1px solid {{a.bordure}}; border-left: 3px solid {{a.marque}}; background: {{a.fond}}; border-radius: 4px; padding: 16px 16px 14px; cursor: pointer; display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+          <h2 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 21px; line-height: 1.15; margin: 0; flex-grow: 1">{{a.nom}}</h2>
+          <span style="font-size: 9.5px; letter-spacing: 0.13em; text-transform: uppercase; font-weight: 700; color: {{a.roleEncre}}; background: {{a.roleFond}}; border-radius: 2px; padding: 5px 7px; white-space: nowrap">{{a.role}}</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; font-size: 12.5px; color: #6E6357">
+          <span style="display: flex; align-items: center; gap: 6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.6"><circle cx="12" cy="8" r="3.4" /><path d="M5.5 20c0-3.6 2.9-6.5 6.5-6.5s6.5 2.9 6.5 6.5" /></svg>
+            {{a.personnes}} personnes
+          </span>
+          <span style="display: flex; align-items: center; gap: 6px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3D5A8C" stroke-width="1.6"><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4M9 12h6M9 16h4" /></svg>
+            {{a.sources}} sources
+          </span>
+        </div>
+        <div style="border-top: 1px solid #E4DBCB; padding-top: 10px; font-size: 11.5px; color: #8A7D6D">{{a.maj}}</div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 14px 22px 34px; border-top: 1px solid #E4DBCB; background: #F3EDE1; display: flex; flex-direction: column; gap: 10px">
+    <button style="height: 50px; background: #9A5233; color: #FBF7EF; border: 0; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FBF7EF" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14" /></svg>
+      Nouvel arbre
+    </button>
+    <button style="height: 44px; background: none; border: 1px solid #C9BCA6; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 14px; font-weight: 500; color: #4A4137; cursor: pointer">Importer un fichier GEDCOM</button>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { choisi: 'vasseur' };
+  }
+  renderVals() {
+    // Le rôle est ce qui décide de ce que l'écran suivant autorise : il porte
+    // donc une couleur à lui, pas la teinte de marque.
+    const teintes = {
+      'Propriétaire': { encre: '#7A3F26', fond: '#EFE0D5' },
+      'Éditeur': { encre: '#33507E', fond: '#DFE5F0' },
+      'Lecteur': { encre: '#6E6357', fond: '#E8E1D3' }
+    };
+    const brut = [
+      { id: 'vasseur', nom: 'Famille Vasseur — Prigent', role: 'Propriétaire', personnes: 148, sources: 62, maj: 'Modifié il y a 2 jours par vous' },
+      { id: 'legall', nom: 'Branche Le Gall (Finistère)', role: 'Éditeur', personnes: 41, sources: 18, maj: 'Modifié le 12 août par Hélène Prigent' },
+      { id: 'chauvet', nom: 'Ascendance Chauvet', role: 'Lecteur', personnes: 87, sources: 30, maj: 'Modifié le 3 juin par Lucie Vasseur' }
+    ];
+    return {
+      arbres: brut.map((a) => {
+        const actif = a.id === this.state.choisi;
+        return Object.assign({}, a, {
+          fond: actif ? '#FBF7EF' : '#EFE9DD',
+          bordure: actif ? '#C9BCA6' : '#E4DBCB',
+          marque: actif ? '#9A5233' : '#E4DBCB',
+          roleEncre: teintes[a.role].encre,
+          roleFond: teintes[a.role].fond,
+          pick: () => this.setState({ choisi: a.id })
+        });
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

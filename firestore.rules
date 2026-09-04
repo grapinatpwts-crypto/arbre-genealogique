@@ -1,0 +1,118 @@
+rules_version = '2';
+
+// Toute la sécurité du projet tient ici : il n'y a pas de serveur applicatif
+// entre le navigateur et Firestore, pas de Cloud Function, pas de custom claim.
+// Le rôle d'une personne sur un arbre est lu par un get() sur le document de
+// l'arbre lui-même — c'est ce qui garde le projet sur le plan Spark gratuit.
+//
+// Le modèle en une phrase : un arbre porte la liste de ses membres et leur rôle ;
+// tout le reste (personnes, unions, sources) vit en sous-collection de l'arbre et
+// hérite donc de son contrôle d'accès en une seule lecture.
+//
+//   arbres/{arbreId}
+//     membres : [email, ...]              ← pour la requête « mes arbres »
+//     roles   : { "<email>": "proprietaire" | "editeur" | "lecteur" }
+//     invites : [email, ...]              ← membres qui ne se sont jamais connectés
+//     arbres/{arbreId}/personnes/{id}
+//     arbres/{arbreId}/unions/{id}
+//     arbres/{arbreId}/sources/{id}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function uid() {
+      return request.auth.token.email.lower();
+    }
+
+    // `roles` est une map dont les clés sont des e-mails. Un accès direct
+    // `roles[uid()]` sur une clé absente fait ÉCHOUER la règle au lieu de
+    // renvoyer un refus propre : `.get(clé, défaut)` est ce qui rend le refus
+    // lisible côté client (permission-denied, pas une erreur d'évaluation).
+    function role(arbreId) {
+      return request.auth == null ? 'aucun'
+        : get(/databases/$(database)/documents/arbres/$(arbreId)).data.roles.get(uid(), 'aucun');
+    }
+    function peutLire(arbreId) {
+      return role(arbreId) in ['proprietaire', 'editeur', 'lecteur'];
+    }
+    function peutEcrire(arbreId) {
+      return role(arbreId) in ['proprietaire', 'editeur'];
+    }
+    function estProprietaire(arbreId) {
+      return role(arbreId) == 'proprietaire';
+    }
+
+    // ── L'arbre lui-même ───────────────────────────────────────────────
+    match /arbres/{arbreId} {
+
+      // La liste « Mes arbres » interroge
+      // where('membres', 'array-contains', monEmail) : chaque document renvoyé
+      // repasse cette règle, il n'y a donc jamais de requête ouverte à cadrer.
+      allow read: if request.auth != null && uid() in resource.data.membres;
+
+      // À la création on ne peut se déclarer que soi-même, et propriétaire.
+      // Sans cette contrainte, n'importe qui pourrait créer un arbre en
+      // s'attribuant d'office des comptes tiers comme membres.
+      allow create: if request.auth != null
+        && request.resource.data.cree_par == uid()
+        && request.resource.data.membres == [uid()]
+        && request.resource.data.roles.keys().size() == 1
+        && request.resource.data.roles[uid()] == 'proprietaire';
+
+      allow update: if
+        // Le propriétaire touche à tout — sauf à se déclasser lui-même, ce qui
+        // laisserait un arbre sans personne pour en changer les rôles.
+        (estProprietaire(arbreId)
+          && request.resource.data.roles[uid()] == 'proprietaire'
+          && uid() in request.resource.data.membres)
+        ||
+        // L'éditeur saisit, il n'invite pas : il ne peut écrire que le titre et
+        // les compteurs d'en-tête, jamais `membres` ni `roles`.
+        (peutEcrire(arbreId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['nom', 'resume', 'maj_le', 'maj_par']));
+
+      // Supprimer le document de l'arbre ne supprime PAS ses sous-collections :
+      // Firestore n'a pas de suppression récursive côté client. L'app vide les
+      // sous-collections par lots avant de supprimer l'arbre — voir PROJET.md § 8.
+      allow delete: if estProprietaire(arbreId);
+    }
+
+    // ── Personnes ──────────────────────────────────────────────────────
+    // `parents` est un tableau de 0 à 2 identifiants de personnes du même arbre.
+    // Les règles ne savent pas détecter un cycle (quelqu'un devenu son propre
+    // aïeul par une fausse manip) : c'est un invariant tenu côté client, au même
+    // titre que « une seule union en cours ». Risque accepté, tracé dans PROJET.md.
+    match /arbres/{arbreId}/personnes/{personneId} {
+      allow read: if peutLire(arbreId);
+      allow create: if peutEcrire(arbreId) && request.resource.data.cree_par == uid();
+      allow update: if peutEcrire(arbreId) && request.resource.data.maj_par == uid();
+      allow delete: if peutEcrire(arbreId);
+    }
+
+    // ── Unions (mariages, couples) ─────────────────────────────────────
+    match /arbres/{arbreId}/unions/{unionId} {
+      allow read: if peutLire(arbreId);
+      allow create: if peutEcrire(arbreId) && request.resource.data.cree_par == uid();
+      allow update: if peutEcrire(arbreId) && request.resource.data.maj_par == uid();
+      allow delete: if peutEcrire(arbreId);
+    }
+
+    // ── Sources et actes ───────────────────────────────────────────────
+    // Une source n'est jamais supprimée par un éditeur tant qu'un événement la
+    // cite : la vérification est côté client (l'arbre entier est en mémoire),
+    // les règles ne peuvent pas parcourir les autres documents.
+    match /arbres/{arbreId}/sources/{sourceId} {
+      allow read: if peutLire(arbreId);
+      allow create: if peutEcrire(arbreId) && request.resource.data.cree_par == uid();
+      allow update: if peutEcrire(arbreId) && request.resource.data.maj_par == uid();
+      allow delete: if peutEcrire(arbreId);
+    }
+
+    // Tout le reste est refusé — y compris les collections qu'on ajouterait
+    // sans y penser : rien n'est lisible par défaut.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

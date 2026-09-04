@@ -1,0 +1,177 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Archivo', system-ui, sans-serif; }
+    a { color: #9A5233; text-decoration: none; } a:hover { color: #7A3F26; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #F3EDE1; color: #1F1A14; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; justify-content: space-between; min-height: 44px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M15 5l-7 7 7 7" /></svg>
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="#4A4137"><circle cx="5" cy="12" r="1.7" /><circle cx="12" cy="12" r="1.7" /><circle cx="19" cy="12" r="1.7" /></svg>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 7px">
+      <h1 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1.05; margin: 0">Marcel Vasseur</h1>
+      <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #6E6357; font-variant-numeric: tabular-nums">
+        <span>† 14 mars 1929 – 2 février 2011</span>
+        <span style="color: #C9BCA6">·</span>
+        <span>81 ans</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 22px; border-bottom: 1px solid #DCD2C0">
+      <sc-for list="{{onglets}}" as="o" hint-placeholder-count="3">
+        <div onClick="{{ o.pick }}" style="padding: 0 0 11px; cursor: pointer; border-bottom: 2px solid {{o.trait}}; margin-bottom: -1px; display: flex; align-items: center; gap: 6px">
+          <span style="font-size: 13.5px; font-weight: 600; color: {{o.encre}}">{{o.nom}}</span>
+          <span style="font-size: 10.5px; font-weight: 600; color: #9C8F7D; font-variant-numeric: tabular-nums">{{o.compte}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 18px 20px 0; display: flex; flex-direction: column; gap: 22px">
+
+    <sc-if value="{{estCivil}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 22px">
+        <div style="display: flex; flex-direction: column; gap: 0">
+          <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600; margin-bottom: 10px">État civil</span>
+          <sc-for list="{{civil}}" as="l" hint-placeholder-count="4">
+            <div style="display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid #E4DBCB">
+              <span style="font-size: 12.5px; color: #8A7D6D; width: 108px; flex-grow: 0">{{l.cle}}</span>
+              <span style="font-size: 14.5px; flex-grow: 1">{{l.valeur}}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Événements</span>
+          <sc-for list="{{evenements}}" as="e" hint-placeholder-count="3">
+            <div style="background: #FBF7EF; border: 1px solid #E4DBCB; border-radius: 4px; padding: 13px 14px; display: flex; flex-direction: column; gap: 8px">
+              <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+                <span style="font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-weight: 600">{{e.type}}</span>
+                <span style="font-size: 12.5px; color: #4A4137; font-variant-numeric: tabular-nums">{{e.date}}</span>
+              </div>
+              <span style="font-size: 13px; color: #6E6357">{{e.lieu}}</span>
+              <div style="display: flex; align-items: center; gap: 7px; border-top: 1px solid #E4DBCB; padding-top: 8px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3D5A8C" stroke-width="1.7"><path d="M6 3h8l4 4v14H6z" /><path d="M14 3v4h4" /></svg>
+                <span style="font-size: 11.5px; color: #3D5A8C; font-weight: 500; flex-grow: 1">{{e.source}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{estFamille}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 20px">
+        <sc-for list="{{groupes}}" as="g" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 0">
+            <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600; margin-bottom: 8px">{{g.titre}}</span>
+            <sc-for list="{{g.gens}}" as="p" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid #E4DBCB; cursor: pointer">
+                <div style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #C9BCA6; display: flex; align-items: center; justify-content: center; font-family: 'EB Garamond', Georgia, serif; font-size: 14px; color: #6E6357; flex-grow: 0">{{p.initiales}}</div>
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0">
+                  <span style="font-family: 'EB Garamond', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.15">{{p.nom}}</span>
+                  <span style="font-size: 11.5px; color: #8A7D6D; font-variant-numeric: tabular-nums">{{p.detail}}</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9BCA6" stroke-width="1.8" stroke-linecap="square"><path d="M9 5l7 7-7 7" /></svg>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{estSources}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <sc-for list="{{actes}}" as="s" hint-placeholder-count="3">
+          <div style="background: #FBF7EF; border: 1px solid #E4DBCB; border-left: 3px solid #3D5A8C; border-radius: 4px; padding: 13px 14px; display: flex; flex-direction: column; gap: 9px">
+            <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px">
+              <span style="font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-weight: 600; line-height: 1.2; flex-grow: 1">{{s.titre}}</span>
+              <span style="font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: #33507E; background: #DFE5F0; border-radius: 2px; padding: 5px 7px; white-space: nowrap">{{s.type}}</span>
+            </div>
+            <span style="font-size: 12.5px; color: #6E6357; line-height: 1.45">{{s.cote}}</span>
+            <div style="display: flex; align-items: center; gap: 7px; border-top: 1px solid #E4DBCB; padding-top: 8px">
+              <span style="font-size: 11.5px; color: #8A7D6D; flex-grow: 1">{{s.rattache}}</span>
+              <span style="font-size: 11.5px; font-weight: 600; color: #9A5233">Voir</span>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="display: flex; gap: 10px; padding: 14px 20px 34px; border-top: 1px solid #E4DBCB; background: #F3EDE1">
+    <button style="flex-grow: 1; height: 50px; background: #9A5233; color: #FBF7EF; border: 0; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">Modifier</button>
+    <button style="flex-grow: 1; height: 50px; background: none; border: 1px solid #C9BCA6; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 15px; font-weight: 600; color: #4A4137; cursor: pointer">Rattacher</button>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { onglet: 'civil' };
+  }
+  renderVals() {
+    const o = this.state.onglet;
+    const ong = (id, nom, compte) => ({
+      nom, compte,
+      encre: o === id ? '#1F1A14' : '#8A7D6D',
+      trait: o === id ? '#9A5233' : 'transparent',
+      pick: () => this.setState({ onglet: id })
+    });
+    return {
+      onglets: [ong('civil', 'Fiche', ''), ong('famille', 'Famille', '5'), ong('sources', 'Sources', '3')],
+      estCivil: o === 'civil',
+      estFamille: o === 'famille',
+      estSources: o === 'sources',
+      civil: [
+        { cle: 'Nom', valeur: 'Vasseur' },
+        { cle: 'Prénoms', valeur: 'Marcel, Auguste, Jean' },
+        { cle: 'Sexe', valeur: 'Masculin' },
+        { cle: 'Profession', valeur: 'Ajusteur-mécanicien' }
+      ],
+      evenements: [
+        { type: 'Naissance', date: '14 mars 1929', lieu: 'Saumur, Maine-et-Loire', source: "Acte n° 112 — registre d'état civil, Saumur 1929" },
+        { type: 'Mariage', date: '12 septembre 1953', lieu: 'Cholet, Maine-et-Loire', source: 'Acte de mariage n° 87 — Cholet 1953' },
+        { type: 'Décès', date: '2 février 2011', lieu: 'Angers, Maine-et-Loire', source: 'Acte n° 341 — Angers 2011' }
+      ],
+      groupes: [
+        { titre: 'Parents', gens: [
+          { initiales: 'AV', nom: 'Auguste Vasseur', detail: '† 1899 – 1962 · Saumur (49)' },
+          { initiales: 'JB', nom: 'Jeanne Bouchet', detail: '† 1902 – 1988 · Doué-la-Fontaine (49)' }
+        ] },
+        { titre: 'Union', gens: [
+          { initiales: 'SC', nom: 'Suzanne Chauvet', detail: 'Mariés le 12 septembre 1953 à Cholet' }
+        ] },
+        { titre: 'Enfants', gens: [
+          { initiales: 'ÉV', nom: 'Étienne Vasseur', detail: 'né en 1958 · Angers (49)' },
+          { initiales: 'JV', nom: 'Jean-Pierre Vasseur', detail: '† 1960 – 1961 · Angers (49)' },
+          { initiales: 'CV', nom: 'Claire Vasseur', detail: 'née en 1963 · Angers (49)' }
+        ] }
+      ],
+      actes: [
+        { titre: "Registre d'état civil, Saumur — naissances 1929", type: 'État civil', cote: 'AD Maine-et-Loire, 5 Mi 1234, vue 41 — acte n° 112', rattache: 'Rattachée à 1 événement' },
+        { titre: 'Registre paroissial de Cholet, mariages 1953', type: 'Paroissial', cote: 'AD Maine-et-Loire, 1 Mi 88, vue 12 — acte n° 87', rattache: 'Rattachée à 2 événements' },
+        { titre: 'Recensement de Saumur, 1936', type: 'Recensement', cote: 'AD Maine-et-Loire, 6 M 271 — ménage 44, rue Basse', rattache: 'Rattachée à 1 événement' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

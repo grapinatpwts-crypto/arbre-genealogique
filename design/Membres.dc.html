@@ -1,0 +1,148 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Archivo', system-ui, sans-serif; }
+    a { color: #9A5233; text-decoration: none; } a:hover { color: #7A3F26; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #F3EDE1; color: #1F1A14; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="padding: 68px 20px 16px; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Famille Vasseur — Prigent</span>
+    <h1 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1; margin: 0">Membres &amp; partage</h1>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 6px 20px 0; display: flex; flex-direction: column; gap: 20px">
+
+    <div style="display: flex; flex-direction: column; gap: 0">
+      <sc-for list="{{membres}}" as="m" hint-placeholder-count="3">
+        <div style="border-bottom: 1px solid #E4DBCB; display: flex; flex-direction: column">
+          <div onClick="{{ m.pick }}" style="display: flex; align-items: center; gap: 12px; padding: 13px 0; cursor: pointer">
+            <div style="width: 38px; height: 38px; border-radius: 50%; background: {{m.pastilleFond}}; display: flex; align-items: center; justify-content: center; font-family: 'EB Garamond', Georgia, serif; font-size: 15px; color: {{m.pastilleEncre}}; flex-grow: 0">{{m.initiales}}</div>
+            <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+              <span style="font-size: 15px; font-weight: 500; line-height: 1.2">{{m.nom}}</span>
+              <span style="font-size: 11.5px; color: #8A7D6D; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.email}}</span>
+            </div>
+            <span style="font-size: 9.5px; letter-spacing: 0.13em; text-transform: uppercase; font-weight: 700; color: {{m.roleEncre}}; background: {{m.roleFond}}; border-radius: 2px; padding: 6px 8px; white-space: nowrap; flex-grow: 0">{{m.role}}</span>
+          </div>
+          <div style="padding: 0 0 14px; display: {{m.affichage}}; flex-direction: column; gap: 8px">
+            <div style="display: flex; background: #E8E1D3; border: 1px solid #DCD2C0; border-radius: 4px; padding: 3px; gap: 3px">
+              <button onClick="{{ m.pickProprietaire }}" style="flex-grow: 1; height: 38px; border: 0; border-radius: 2px; cursor: pointer; font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 600; background: {{m.pFond}}; color: {{m.pEncre}}; box-shadow: {{m.pOmbre}}">Propriétaire</button>
+              <button onClick="{{ m.pickEditeur }}" style="flex-grow: 1; height: 38px; border: 0; border-radius: 2px; cursor: pointer; font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 600; background: {{m.eFond}}; color: {{m.eEncre}}; box-shadow: {{m.eOmbre}}">Éditeur</button>
+              <button onClick="{{ m.pickLecteur }}" style="flex-grow: 1; height: 38px; border: 0; border-radius: 2px; cursor: pointer; font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 600; background: {{m.lFond}}; color: {{m.lEncre}}; box-shadow: {{m.lOmbre}}">Lecteur</button>
+            </div>
+            <span style="font-size: 11.5px; color: #8A7D6D; line-height: 1.45">{{m.explication}}</span>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 1px solid #E4DBCB">
+        <div style="width: 38px; height: 38px; border-radius: 50%; border: 1px dashed #C9BCA6; display: flex; align-items: center; justify-content: center; flex-grow: 0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9C8F7D" stroke-width="1.6"><path d="M3 7l9 6 9-6M3 6h18v12H3z" /></svg>
+        </div>
+        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0">
+          <span style="font-size: 15px; font-weight: 500; color: #6E6357">paul.berthier@gmail.com</span>
+          <span style="font-size: 11.5px; color: #8A7D6D">Invitation envoyée le 28 août — en attente</span>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; color: #9A5233; flex-grow: 0; cursor: pointer">Renvoyer</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Inviter quelqu&#39;un</span>
+      <div style="height: 46px; background: #FBF7EF; border: 1px solid #C9BCA6; border-radius: 4px; padding: 0 13px; display: flex; align-items: center; font-size: 14.5px; color: #9C8F7D">Adresse Gmail de la personne</div>
+      <div style="display: flex; gap: 10px">
+        <div style="flex-grow: 1; height: 46px; background: #FBF7EF; border: 1px solid #C9BCA6; border-radius: 4px; padding: 0 13px; display: flex; align-items: center; justify-content: space-between; font-size: 14.5px">
+          Lecteur
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9C8F7D" stroke-width="1.8" stroke-linecap="square"><path d="M6 9l6 6 6-6" /></svg>
+        </div>
+        <button style="width: 108px; flex-grow: 0; height: 46px; background: #9A5233; color: #FBF7EF; border: 0; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 14.5px; font-weight: 600; cursor: pointer">Inviter</button>
+      </div>
+      <p style="font-size: 11.5px; color: #8A7D6D; line-height: 1.5; margin: 0; text-wrap: pretty">La personne devra se connecter avec ce compte Google. Tant qu&#39;elle ne l&#39;a pas fait, elle n&#39;a accès à rien.</p>
+    </div>
+
+  </div>
+
+  <div style="display: flex; padding: 8px 6px 26px; background: #F3EDE1; border-top: 1px solid #E4DBCB">
+    <sc-for list="{{onglets}}" as="o" hint-placeholder-count="4">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; cursor: pointer">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="{{o.encre}}" stroke-width="1.6" stroke-linecap="square"><path d="{{o.icone}}" /></svg>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.03em; color: {{o.encre}}">{{o.nom}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Toucher un membre ouvre son sélecteur de rôle sous sa ligne : pas de
+    // menu flottant, l'écran dit ce que chaque rôle autorise au moment du choix.
+    this.state = { ouvert: 'helene', roles: { camille: 'Propriétaire', helene: 'Éditeur', lucie: 'Lecteur' } };
+  }
+  renderVals() {
+    const teintes = {
+      'Propriétaire': { encre: '#7A3F26', fond: '#EFE0D5' },
+      'Éditeur': { encre: '#33507E', fond: '#DFE5F0' },
+      'Lecteur': { encre: '#6E6357', fond: '#E8E1D3' }
+    };
+    const explications = {
+      'Propriétaire': 'Saisit, invite, change les rôles et peut supprimer l’arbre.',
+      'Éditeur': 'Saisit les personnes, les unions et les sources. N’invite personne.',
+      'Lecteur': 'Consulte l’arbre et les sources, sans rien pouvoir modifier.'
+    };
+    const gens = [
+      { id: 'camille', initiales: 'CV', nom: 'Camille Vasseur (vous)', email: 'camille.vasseur@gmail.com' },
+      { id: 'helene', initiales: 'HP', nom: 'Hélène Prigent', email: 'helene.prigent@gmail.com' },
+      { id: 'lucie', initiales: 'LB', nom: 'Lucie Berthier', email: 'lucie.berthier@gmail.com' }
+    ];
+    const onglet = (nom, icone, actif) => ({ nom, icone, encre: actif ? '#9A5233' : '#9C8F7D' });
+    return {
+      membres: gens.map((g) => {
+        const role = this.state.roles[g.id];
+        const ouvert = this.state.ouvert === g.id;
+        const pose = (r) => ({
+          fond: r === role ? '#FBF7EF' : 'transparent',
+          encre: r === role ? '#1F1A14' : '#8A7D6D',
+          ombre: r === role ? '0 1px 2px rgba(31,26,20,.12)' : 'none'
+        });
+        const change = (r) => () => this.setState({ roles: Object.assign({}, this.state.roles, { [g.id]: r }) });
+        const p = pose('Propriétaire');
+        const e = pose('Éditeur');
+        const l = pose('Lecteur');
+        return {
+          initiales: g.initiales, nom: g.nom, email: g.email, role,
+          affichage: ouvert ? 'flex' : 'none',
+          pastilleFond: teintes[role].fond,
+          pastilleEncre: teintes[role].encre,
+          roleEncre: teintes[role].encre,
+          roleFond: teintes[role].fond,
+          explication: explications[role],
+          pick: () => this.setState({ ouvert: ouvert ? null : g.id }),
+          pFond: p.fond, pEncre: p.encre, pOmbre: p.ombre, pickProprietaire: change('Propriétaire'),
+          eFond: e.fond, eEncre: e.encre, eOmbre: e.ombre, pickEditeur: change('Éditeur'),
+          lFond: l.fond, lEncre: l.encre, lOmbre: l.ombre, pickLecteur: change('Lecteur')
+        };
+      }),
+      onglets: [
+        onglet('Arbre', 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z', false),
+        onglet('Personnes', 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4', false),
+        onglet('Sources', 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4', false),
+        onglet('Membres', 'M8 11a3 3 0 100-6 3 3 0 000 6zM2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 010 5.8M18 14.2c2.4.7 4 2.9 4 5.8', true)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Archivo', system-ui, sans-serif; }
+    a { color: #9A5233; text-decoration: none; } a:hover { color: #7A3F26; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #F3EDE1; color: #1F1A14; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="padding: 60px 20px 0; display: flex; flex-direction: column; gap: 14px">
+    <div style="display: flex; align-items: center; min-height: 44px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M15 5l-7 7 7 7" /></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 30px; line-height: 1.05; margin: 0">Rattacher une personne</h1>
+      <p style="font-size: 13.5px; color: #6E6357; margin: 0">à <span style="color: #1F1A14; font-weight: 500">Marcel Vasseur</span> (1929 – 2011)</p>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 22px 20px 0; display: flex; flex-direction: column; gap: 22px">
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Lien de parenté</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{liens}}" as="l" hint-placeholder-count="4">
+          <div onClick="{{ l.pick }}" style="height: 78px; background: {{l.fond}}; border: 1px solid {{l.bordure}}; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: {{l.ombre}}">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{l.encre}}" stroke-width="1.6" stroke-linecap="square"><path d="{{l.icone}}" /></svg>
+            <span style="font-size: 13.5px; font-weight: 600; color: {{l.encre}}">{{l.nom}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div onClick="{{ pickFratrie }}" style="height: 56px; background: {{fratrieFond}}; border: 1px solid {{fratrieBord}}; border-radius: 4px; display: flex; align-items: center; gap: 12px; padding: 0 16px; cursor: pointer; box-shadow: {{fratrieOmbre}}">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{fratrieEncre}}" stroke-width="1.6" stroke-linecap="square"><path d="M7 12a3 3 0 100-6 3 3 0 000 6zM17 12a3 3 0 100-6 3 3 0 000 6zM2 20c0-2.8 2.2-5 5-5s5 2.2 5 5M12 20c0-2.8 2.2-5 5-5s5 2.2 5 5" /></svg>
+        <span style="font-size: 14px; font-weight: 600; color: {{fratrieEncre}}; flex-grow: 1">Frère ou sœur</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-size: 9.5px; letter-spacing: 0.17em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">{{titreCible}}</span>
+
+      <div style="height: 46px; background: #FBF7EF; border: 1px solid #C9BCA6; border-radius: 4px; padding: 0 13px; display: flex; align-items: center; gap: 10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9C8F7D" stroke-width="1.7"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l5 5" /></svg>
+        <span style="font-size: 14.5px; color: #9C8F7D">Chercher dans les 148 personnes</span>
+      </div>
+
+      <sc-for list="{{candidats}}" as="c" hint-placeholder-count="2">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E4DBCB; cursor: pointer">
+          <div style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid #C9BCA6; display: flex; align-items: center; justify-content: center; font-family: 'EB Garamond', Georgia, serif; font-size: 14px; color: #6E6357; flex-grow: 0">{{c.initiales}}</div>
+          <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px; min-width: 0">
+            <span style="font-family: 'EB Garamond', Georgia, serif; font-size: 17px; font-weight: 600; line-height: 1.15">{{c.nom}}</span>
+            <span style="font-size: 11.5px; color: #8A7D6D; font-variant-numeric: tabular-nums">{{c.detail}}</span>
+          </div>
+        </div>
+      </sc-for>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; cursor: pointer">
+        <div style="width: 36px; height: 36px; border-radius: 50%; border: 1px dashed #9A5233; display: flex; align-items: center; justify-content: center; flex-grow: 0">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.9" stroke-linecap="square"><path d="M12 5v14M5 12h14" /></svg>
+        </div>
+        <span style="font-size: 14.5px; font-weight: 600; color: #9A5233; flex-grow: 1">Créer une nouvelle personne</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="padding: 12px 20px 34px; border-top: 1px solid #E4DBCB; background: #F3EDE1">
+    <button style="width: 100%; height: 50px; background: {{fondSuite}}; color: {{encreSuite}}; border: 0; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer">{{libelleSuite}}</button>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    // Rien n'est choisi au départ : le bouton reste éteint tant que le lien
+    // n'est pas dit, parce qu'un rattachement sans lien n'existe pas.
+    this.state = { lien: null };
+  }
+  renderVals() {
+    const choisi = this.state.lien;
+    const carte = (id, nom, icone) => {
+      const actif = choisi === id;
+      return {
+        nom, icone,
+        fond: actif ? '#FBF7EF' : '#EFE9DD',
+        bordure: actif ? '#9A5233' : '#DCD2C0',
+        encre: actif ? '#9A5233' : '#6E6357',
+        ombre: actif ? '0 0 0 3px rgba(154,82,51,.16)' : 'none',
+        pick: () => this.setState({ lien: id })
+      };
+    };
+    const fratrieActif = choisi === 'fratrie';
+    const cibles = {
+      pere: 'Père — choisir la personne',
+      mere: 'Mère — choisir la personne',
+      conjoint: 'Conjoint — choisir la personne',
+      enfant: 'Enfant — choisir la personne',
+      fratrie: 'Frère ou sœur — choisir la personne'
+    };
+    return {
+      liens: [
+        carte('pere', 'Père', 'M12 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM5 21c0-3.9 3.1-7 7-7s7 3.1 7 7'),
+        carte('mere', 'Mère', 'M12 11a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM12 14v7M9 18h6'),
+        carte('conjoint', 'Conjoint', 'M9 11a3 3 0 100-6 3 3 0 000 6zM15 11a3 3 0 100-6 3 3 0 000 6zM12 8h0M4 20c0-2.8 2.2-5 5-5M20 20c0-2.8-2.2-5-5-5'),
+        carte('enfant', 'Enfant', 'M12 9a3 3 0 100-6 3 3 0 000 6zM12 12v5M8 21l4-4 4 4')
+      ],
+      fratrieFond: fratrieActif ? '#FBF7EF' : '#EFE9DD',
+      fratrieBord: fratrieActif ? '#9A5233' : '#DCD2C0',
+      fratrieEncre: fratrieActif ? '#9A5233' : '#6E6357',
+      fratrieOmbre: fratrieActif ? '0 0 0 3px rgba(154,82,51,.16)' : 'none',
+      pickFratrie: () => this.setState({ lien: 'fratrie' }),
+      titreCible: choisi ? cibles[choisi] : 'Personne à rattacher',
+      candidats: [
+        { initiales: 'AV', nom: 'Auguste Vasseur', detail: '† 1899 – 1962 · Saumur (49)' },
+        { initiales: 'AV', nom: 'André Vasseur', detail: '† 1901 – 1974 · Saumur (49)' }
+      ],
+      fondSuite: choisi ? '#9A5233' : '#E4DBCB',
+      encreSuite: choisi ? '#FBF7EF' : '#A2988A',
+      libelleSuite: choisi ? 'Continuer' : 'Choisissez un lien de parenté'
+    };
+  }
+}
+</script>
+</body>
+</html>

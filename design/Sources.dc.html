@@ -1,0 +1,120 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <style>
+    body { margin: 0; font-family: 'Archivo', system-ui, sans-serif; }
+    a { color: #9A5233; text-decoration: none; } a:hover { color: #7A3F26; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #F3EDE1; color: #1F1A14; display: flex; flex-direction: column; box-sizing: border-box; overflow: hidden">
+
+  <div style="padding: 68px 20px 14px; display: flex; flex-direction: column; gap: 6px">
+    <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #8A7D6D; font-weight: 600">Famille Vasseur — Prigent</span>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+      <h1 style="font-family: 'EB Garamond', Georgia, serif; font-weight: 600; font-size: 34px; line-height: 1; margin: 0">Sources</h1>
+      <span style="font-size: 12.5px; color: #8A7D6D; padding-bottom: 3px">{{compte}}</span>
+    </div>
+  </div>
+
+  <div style="padding: 4px 0 12px; overflow: hidden">
+    <div style="display: flex; gap: 8px; padding: 0 20px">
+      <sc-for list="{{filtres}}" as="f" hint-placeholder-count="5">
+        <button onClick="{{ f.pick }}" style="height: 34px; padding: 0 13px; border: 1px solid {{f.bordure}}; background: {{f.fond}}; color: {{f.encre}}; border-radius: 999px; font-family: 'Archivo', sans-serif; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-grow: 0">{{f.nom}}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: hidden; padding: 4px 20px 0; display: flex; flex-direction: column; gap: 10px">
+    <sc-for list="{{actes}}" as="s" hint-placeholder-count="4">
+      <div style="background: #FBF7EF; border: 1px solid #E4DBCB; border-left: 3px solid {{s.marque}}; border-radius: 4px; padding: 13px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px">
+          <span style="font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-weight: 600; line-height: 1.2; flex-grow: 1">{{s.titre}}</span>
+          <span style="font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: {{s.typeEncre}}; background: {{s.typeFond}}; border-radius: 2px; padding: 5px 7px; white-space: nowrap; flex-grow: 0">{{s.type}}</span>
+        </div>
+        <span style="font-size: 12.5px; color: #6E6357; line-height: 1.45; font-variant-numeric: tabular-nums">{{s.cote}}</span>
+        <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid #E4DBCB; padding-top: 8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9C8F7D" stroke-width="1.7"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="9" /></svg>
+          <span style="font-size: 11.5px; color: #8A7D6D; flex-grow: 1">{{s.rattache}}</span>
+          <span style="font-size: 11.5px; color: #9C8F7D; font-variant-numeric: tabular-nums">{{s.ajout}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="padding: 12px 20px 10px; background: #F3EDE1">
+    <button style="width: 100%; height: 48px; background: none; border: 1px dashed #C9BCA6; border-radius: 4px; font-family: 'Archivo', sans-serif; font-size: 14.5px; font-weight: 600; color: #9A5233; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14" /></svg>
+      Ajouter une source
+    </button>
+  </div>
+
+  <div style="display: flex; padding: 4px 6px 26px; background: #F3EDE1; border-top: 1px solid #E4DBCB">
+    <sc-for list="{{onglets}}" as="o" hint-placeholder-count="4">
+      <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; cursor: pointer">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="{{o.encre}}" stroke-width="1.6" stroke-linecap="square"><path d="{{o.icone}}" /></svg>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.03em; color: {{o.encre}}">{{o.nom}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filtre: 'tout' };
+  }
+  renderVals() {
+    const teintes = {
+      'État civil': { encre: '#33507E', fond: '#DFE5F0', marque: '#3D5A8C' },
+      'Paroissial': { encre: '#5C4A7A', fond: '#E5E0EF', marque: '#6B5691' },
+      'Recensement': { encre: '#4A5F3A', fond: '#E2E9DC', marque: '#5C7548' },
+      'En ligne': { encre: '#7A3F26', fond: '#EFE0D5', marque: '#9A5233' }
+    };
+    const tous = [
+      { cat: 'civil', type: 'État civil', titre: "Registre d'état civil, Saumur — naissances 1929", cote: 'AD 49, 5 Mi 1234, vue 41 — acte n° 112', rattache: '1 événement · Marcel Vasseur', ajout: '12 août' },
+      { cat: 'paroissial', type: 'Paroissial', titre: 'Registre paroissial de Cholet, mariages 1953', cote: 'AD 49, 1 Mi 88, vue 12 — acte n° 87', rattache: '2 événements · Marcel V., Suzanne C.', ajout: '12 août' },
+      { cat: 'recensement', type: 'Recensement', titre: 'Recensement de Saumur, 1936', cote: 'AD 49, 6 M 271 — ménage 44, rue Basse', rattache: '4 événements · famille Vasseur', ajout: '3 août' },
+      { cat: 'ligne', type: 'En ligne', titre: 'Fiche Geneanet — branche Prigent (Finistère)', cote: 'gw.geneanet.org — relevé de J. Kerdraon, consulté le 2 août', rattache: '6 événements · branche Prigent', ajout: '2 août' }
+    ];
+    const f = this.state.filtre;
+    const visibles = f === 'tout' ? tous : tous.filter((s) => s.cat === f);
+    const filtre = (id, nom) => {
+      const actif = f === id;
+      return {
+        nom,
+        fond: actif ? '#9A5233' : 'transparent',
+        bordure: actif ? '#9A5233' : '#C9BCA6',
+        encre: actif ? '#FBF7EF' : '#4A4137',
+        pick: () => this.setState({ filtre: id })
+      };
+    };
+    const onglet = (nom, icone, actif) => ({ nom, icone, encre: actif ? '#9A5233' : '#9C8F7D' });
+    return {
+      compte: visibles.length + ' sur ' + tous.length,
+      filtres: [filtre('tout', 'Toutes'), filtre('civil', 'État civil'), filtre('paroissial', 'Paroissial'), filtre('recensement', 'Recensement'), filtre('ligne', 'En ligne')],
+      actes: visibles.map((s) => Object.assign({}, s, {
+        typeEncre: teintes[s.type].encre,
+        typeFond: teintes[s.type].fond,
+        marque: teintes[s.type].marque
+      })),
+      onglets: [
+        onglet('Arbre', 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z', false),
+        onglet('Personnes', 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4', false),
+        onglet('Sources', 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4', true),
+        onglet('Membres', 'M8 11a3 3 0 100-6 3 3 0 000 6zM2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 010 5.8M18 14.2c2.4.7 4 2.9 4 5.8', false)
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

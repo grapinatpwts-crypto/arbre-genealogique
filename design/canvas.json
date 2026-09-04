@@ -1,0 +1,101 @@
+{
+  "artboards": [
+    {
+      "file": "Connexion.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "1 · Connexion"
+    },
+    {
+      "file": "MesArbres.dc.html",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "2 · Mes arbres",
+      "is_interactive": true
+    },
+    {
+      "file": "Main.dc.html",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "3 · Vue de l'arbre",
+      "is_interactive": true
+    },
+    {
+      "file": "FichePersonne.dc.html",
+      "x": 1410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "4 · Fiche d'une personne",
+      "is_interactive": true
+    },
+    {
+      "file": "EditionPersonne.dc.html",
+      "x": 0,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "5 · Édition",
+      "is_interactive": true
+    },
+    {
+      "file": "Rattacher.dc.html",
+      "x": 470,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "6 · Rattacher",
+      "is_interactive": true
+    },
+    {
+      "file": "Membres.dc.html",
+      "x": 940,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "7 · Membres & partage",
+      "is_interactive": true
+    },
+    {
+      "file": "Sources.dc.html",
+      "x": 1410,
+      "y": 964,
+      "w": 390,
+      "h": 844,
+      "title": "8 · Sources",
+      "is_interactive": true
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-arbres",
+      "x": 470,
+      "y": -190,
+      "w": 390,
+      "text": "Reporté : il n'y aura qu'un seul arbre pour le moment. Cet écran reste dessiné pour le jour où il y en aura plusieurs, mais l'app s'ouvrira directement sur la vue de l'arbre."
+    },
+    {
+      "id": "note-arbre",
+      "x": 940,
+      "y": -190,
+      "w": 390,
+      "text": "À retravailler — c'est l'écran qui doit devenir beaucoup plus design. Ce qui est là tient le principe : canevas de 720 px derrière un écran de 390, bascule Ascendants / Descendants, sélection d'un cartouche."
+    },
+    {
+      "id": "note-sources",
+      "x": 1410,
+      "y": -190,
+      "w": 390,
+      "text": "La source est rattachée à l'événement, pas à la personne : c'est l'acte n° 112 qui atteste la naissance du 14 mars 1929. C'est ce qui distingue cette app d'un simple carnet."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

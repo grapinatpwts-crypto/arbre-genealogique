@@ -1,0 +1,17 @@
+# Clé de compte de service Firebase (scripts/) — jamais dans le dépôt :
+# elle contourne les Security Rules, c'est le seul vrai secret du projet.
+scripts/service-account*.json
+node_modules/
+.firebase/
+firebase-debug.log
+
+# Sortie du canevas Claude Design : régénérée depuis design/*.dc.html,
+# 2 Mo d'éditeur embarqué qui n'ont rien à faire dans l'historique git.
+filiation.html
+
+# Photos des documents de famille : le dépôt est public, elles restent sur le
+# poste. Ce sont elles qui alimentent les premières saisies, pas le dépôt.
+photos/
+documents/
+*.heic
+*.HEIC

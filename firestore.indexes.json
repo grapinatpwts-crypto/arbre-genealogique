@@ -1,0 +1,13 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "arbres",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "membres", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "maj_le", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
