@@ -5,6 +5,10 @@ Point d'entrée pour une nouvelle session. Le détail technique est dans
 
 Dernière mise à jour : **5 septembre 2026**.
 
+**Reprendre par** : écrire `index.html` (point 2 ci-dessous), après avoir tranché
+la question de l'arbre initial — la base Firestore est vide, voir « L'arbre
+initial n'existe pas encore ».
+
 ## Ce qui existe
 
 | | État |
@@ -43,15 +47,36 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
    390, bascule Ascendants / Descendants, sélection d'un cartouche) mais elle
    n'est pas au niveau. Tout le reste de l'app peut être construit sans
    attendre — c'est un écran, pas une fondation.
-2. ~~Créer le projet Firebase, déployer règles et index~~ — fait le 5 septembre 2026.
-3. **Écrire `index.html`** : amorçage Firebase et `window.FB`, connexion Google,
+2. **Écrire `index.html`** : amorçage Firebase et `window.FB`, connexion Google,
    chargement complet de l'arbre en mémoire, puis les écrans dans cet ordre —
    vue de l'arbre, fiche, édition, rattachement, sources.
-4. **Saisir les premières personnes** à partir des documents de Guillaume
+3. **Saisir les premières personnes** à partir des documents de Guillaume
    (voir ci-dessous).
-5. Membres & partage — seulement quand il y aura quelqu'un à inviter.
-6. Import GEDCOM — pas commencé, c'est ce qui permettra de récupérer un arbre
+4. Membres & partage — seulement quand il y aura quelqu'un à inviter.
+5. Import GEDCOM — pas commencé, c'est ce qui permettra de récupérer un arbre
    existant depuis Geneanet.
+
+*(Créer le projet Firebase et déployer règles et index : fait le 5 septembre 2026.)*
+
+## L'arbre initial n'existe pas encore
+
+La base est vide : aucun document `arbres/{arbreId}`. Or l'app s'ouvre
+directement sur un arbre dont l'identifiant est une constante en tête
+d'`index.html` — il faut donc que ce document existe, et qu'il porte le bon
+e-mail comme propriétaire. Deux façons, à trancher :
+
+- **Le créer à la main** dans la console Firestore. Les écritures console
+  passent en admin, elles ignorent les règles : on choisit l'ID librement.
+- **Le faire créer par `index.html`** à la première connexion, si l'arbre est
+  absent. La règle `create` l'autorise, à condition que `membres` vaille
+  exactement `[email]` et `roles` la seule clé `email → 'proprietaire'`.
+
+**Attention à quel compte Google.** Les règles identifient par l'e-mail du
+jeton, en minuscules. Le compte utilisé pour le CLI Firebase
+(`grapinat.pwts@gmail.com`) n'est pas forcément celui avec lequel Guillaume se
+connectera dans l'app. C'est ce dernier qui doit figurer comme `proprietaire`,
+sinon la première lecture de l'arbre est refusée — et un refus de règle ne fait
+aucun bruit, l'écran reste sur « Chargement… ».
 
 ## Configuration Firebase (à recopier dans `index.html` quand il sera écrit)
 
