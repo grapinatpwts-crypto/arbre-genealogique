@@ -85,6 +85,8 @@ registre, pas une application de messagerie.
   sert pas les dépôts privés sur le plan gratuit ; le dépôt ne contient aucune
   donnée familiale, elles vivent dans Firestore)
 - En ligne : https://grapinatpwts-crypto.github.io/arbre-genealogique/ *(actif une fois `index.html` écrit et Pages activé)*
-- Firebase : *à créer* — reporter ici l'ID du projet et la région Firestore
+- Firebase : projet `filiation-vasseur`, Firestore en `europe-west9` (Paris),
+  Auth Google activée. Config de l'appli web « Arbre généalogique » dans
+  `REPRISE.md` (à recopier dans `index.html` une fois écrit).
 - Seul vrai secret du projet : `scripts/service-account.json` (ignoré par git).
   La config Firebase visible dans `index.html` est publique par nature.

@@ -3,7 +3,7 @@
 Point d'entrée pour une nouvelle session. Le détail technique est dans
 `PROJET.md`, les conventions de travail dans `CLAUDE.md`.
 
-Dernière mise à jour : **4 septembre 2026**.
+Dernière mise à jour : **5 septembre 2026**.
 
 ## Ce qui existe
 
@@ -11,11 +11,11 @@ Dernière mise à jour : **4 septembre 2026**.
 |---|---|
 | Maquettes des 8 écrans | faites — canevas Claude Design, sources dans `design/*.dc.html` |
 | Modèle de données | arrêté — `PROJET.md` § 3 |
-| `firestore.rules` | écrit, **jamais déployé** (pas encore de projet Firebase) |
-| `firestore.indexes.json`, `firebase.json` | écrits |
+| `firestore.rules` | écrit et **déployé** sur `filiation-vasseur` |
+| `firestore.indexes.json`, `firebase.json` | écrits et déployés |
 | `manifest.json`, `sw.js` | écrits |
 | `index.html` | **n'existe pas** — c'est le gros du travail restant |
-| Projet Firebase | **à créer** |
+| Projet Firebase | **créé** — `filiation-vasseur`, Firestore `europe-west9` (Paris), Auth Google activée |
 | Icônes PWA | **à créer** (`icon-192.png`, `icon-512.png`, `icon-512-maskable.png`) |
 
 Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-c7724f28cf62
@@ -43,8 +43,7 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
    390, bascule Ascendants / Descendants, sélection d'un cartouche) mais elle
    n'est pas au niveau. Tout le reste de l'app peut être construit sans
    attendre — c'est un écran, pas une fondation.
-2. **Créer le projet Firebase** (README § 1), puis
-   `firebase deploy --only firestore:rules,firestore:indexes`.
+2. ~~Créer le projet Firebase, déployer règles et index~~ — fait le 5 septembre 2026.
 3. **Écrire `index.html`** : amorçage Firebase et `window.FB`, connexion Google,
    chargement complet de l'arbre en mémoire, puis les écrans dans cet ordre —
    vue de l'arbre, fiche, édition, rattachement, sources.
@@ -54,11 +53,29 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 6. Import GEDCOM — pas commencé, c'est ce qui permettra de récupérer un arbre
    existant depuis Geneanet.
 
+## Configuration Firebase (à recopier dans `index.html` quand il sera écrit)
+
+Projet `filiation-vasseur`, appli web « Arbre généalogique ». Valeurs publiques
+par nature (voir `CLAUDE.md`), sans risque à les garder ici en clair.
+
+```js
+const firebaseConfig = {
+  apiKey: "AIzaSyDsu6R8zTpcE83dA4JitWApEj5dNUVO3sY",
+  authDomain: "filiation-vasseur.firebaseapp.com",
+  projectId: "filiation-vasseur",
+  storageBucket: "filiation-vasseur.firebasestorage.app",
+  messagingSenderId: "677547453919",
+  appId: "1:677547453919:web:f4b11142e2c179a709286a"
+};
+```
+
+**Authentication ▸ Settings ▸ Domaines autorisés** contient déjà `localhost`,
+`filiation-vasseur.firebaseapp.com` et `filiation-vasseur.web.app`. Il restera à
+y ajouter `grapinatpwts-crypto.github.io` au moment d'activer GitHub Pages,
+sinon la connexion Google échouera en ligne alors qu'elle marche en local.
+
 ## Ce qu'il faut de Guillaume pour avancer
 
-- **La configuration Firebase** : l'objet copié dans Paramètres du projet ▸
-  Général ▸ application Web (`apiKey`, `authDomain`, `projectId`…). Ces valeurs
-  sont publiques par nature, elles vont en clair dans `index.html`.
 - **Les photos des documents familiaux**, à fournir depuis son téléphone. Elles
   serviront à préciser les premières saisies : noms, dates, lieux, et surtout
   les **cotes** des actes, qui deviendront les sources.

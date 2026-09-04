@@ -170,7 +170,8 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
 ## 7. Prochaines étapes
 
 1. Retravailler la vue de l'arbre — chantier design n° 1, indépendant du reste.
-2. Créer le projet Firebase, activer Google, déployer règles et index.
+2. ~~Créer le projet Firebase, activer Google, déployer règles et index~~ — fait
+   le 5 septembre 2026 (`filiation-vasseur`, voir `REPRISE.md`).
 3. Écrire `index.html` : amorçage Firebase, connexion, chargement de l'arbre.
 4. Le canevas de l'arbre : calcul des générations, tracé SVG, pan/zoom tactile.
 5. Fiche, édition, rattachement, sources.
