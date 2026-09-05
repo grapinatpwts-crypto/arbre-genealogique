@@ -181,6 +181,15 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
 - **Les règles ne détectent pas un cycle de filiation.** Rien n'empêche quelqu'un
   de devenir son propre aïeul par une fausse manip. La vérification se fait côté
   client, avant écriture, en parcourant l'ascendance déjà en mémoire.
+- **Lire un document qui n'existe pas est REFUSÉ, pas vide.** La règle `read` de
+  l'arbre fait `uid() in resource.data.membres` ; sur un document absent,
+  `resource` vaut `null`, l'évaluation échoue et le SDK rend `permission-denied`.
+  Au premier lancement, `getDoc` sur l'arbre lève donc au lieu de rendre un
+  snapshot avec `exists() === false` — et le code qui attendait ce `false` pour
+  créer l'arbre n'y arrivait jamais : l'app se refusait l'accès à elle-même, en
+  accusant le compte. Un refus de lecture au démarrage ne veut pas dire « pas
+  membre », il veut dire « pas encore d'arbre » : le seul moyen de faire la
+  différence est d'essayer de le créer, et de regarder si *ça* est refusé.
 - **Toute lecture sans `try/catch` laisse « Chargement… » à l'infini** si
   Firestore refuse : contrairement à un appel HTTP, un refus de règle ne fait
   aucun bruit.

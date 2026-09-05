@@ -20,7 +20,7 @@ Dernière mise à jour : **5 septembre 2026**.
 | `index.html` | **écrit** — connexion, arbre, fiche, édition, rattachement, sources |
 | Projet Firebase | **créé** — `filiation-vasseur`, Firestore `europe-west9` (Paris), Auth Google activée |
 | Icônes PWA | **faites** — générées depuis le glyphe de l'écran de connexion |
-| GitHub Pages | **pas encore activé** |
+| GitHub Pages | **actif** — https://grapinatpwts-crypto.github.io/arbre-genealogique/ |
 
 Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-c7724f28cf62
 
@@ -42,10 +42,9 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 
 ## Ce qui reste, dans l'ordre
 
-1. **Activer GitHub Pages** (`Settings ▸ Pages ▸ main / root`) et ajouter
-   `grapinatpwts-crypto.github.io` dans **Authentication ▸ Settings ▸ Domaines
-   autorisés**. Sans ce second point, la connexion Google marche en local et
-   échoue en ligne.
+1. ~~Activer GitHub Pages et ajouter le domaine dans Firebase~~ — fait le
+   5 septembre 2026. L'app est en ligne :
+   https://grapinatpwts-crypto.github.io/arbre-genealogique/
 2. **Saisir la page 1 du tableau 505A** : 15 personnes, 1 conjoint, 8 unions.
    La transcription est faite et relue, elle attend d'être tapée dans l'app.
 3. **Retravailler la vue de l'arbre.** Elle fonctionne — quatre générations

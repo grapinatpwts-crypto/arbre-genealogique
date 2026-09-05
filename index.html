@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Filiation</title>
 <link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -573,9 +574,14 @@ function alerte(texte) {
    passent par ici. */
 function expliquer(e) {
   const code = (e && e.code) || '';
+  if (code === 'creation-refusee') {
+    return "Firestore a refusé de créer l'arbre pour " + (app.email || '?') +
+           ". Soit l'arbre existe déjà et appartient à un autre compte, soit " +
+           "firestore.rules n'est pas déployé dans la version attendue.";
+  }
   if (code === 'permission-denied') {
     return "Firestore a refusé l'accès. Le compte connecté (" + (app.email || '?') +
-           ") n'est peut-être pas membre de cet arbre.";
+           ") n'est pas membre de cet arbre.";
   }
   if (code === 'unavailable') return 'Pas de réseau. Les données affichées viennent du cache.';
   if (code === 'failed-precondition') return 'Le cache hors ligne est indisponible dans cet onglet.';
@@ -600,11 +606,27 @@ function tampon(creation) {
   return t;
 }
 
-async function chargerTout() {
-  const snapArbre = await FB.getDoc(refArbre());
-  if (!snapArbre.exists()) {
+async function chargerTout(apresCreation) {
+  let snapArbre;
+  try {
+    snapArbre = await FB.getDoc(refArbre());
+  } catch (e) {
+    // Lire un document Firestore qui n'existe pas est REFUSÉ, pas vide. La règle
+    // `read` fait `uid() in resource.data.membres` ; sur un document absent,
+    // `resource` vaut null et l'évaluation échoue — le SDK rend
+    // permission-denied. Au tout premier lancement, ce refus ne veut donc pas
+    // dire « vous n'êtes pas membre » mais « il n'y a pas encore d'arbre », et
+    // le seul moyen de faire la différence est d'essayer de le créer.
+    if (e.code !== 'permission-denied' || apresCreation) throw e;
     await creerArbre();
-    return chargerTout();
+    return chargerTout(true);
+  }
+  if (!snapArbre.exists()) {
+    if (apresCreation) {
+      throw Object.assign(new Error('arbre introuvable après création'), { code: 'permission-denied' });
+    }
+    await creerArbre();
+    return chargerTout(true);
   }
   app.arbre = lire(snapArbre);
   app.role = (app.arbre.roles || {})[app.email] || null;
@@ -625,13 +647,24 @@ async function chargerTout() {
    condition que `membres` vaille exactement [email] et `roles` la seule clé
    email → 'proprietaire' : c'est ce qui empêche de s'inventer des co-membres. */
 async function creerArbre() {
-  await FB.setDoc(refArbre(), Object.assign({
-    nom: NOM_ARBRE_PAR_DEFAUT,
-    membres: [app.email],
-    roles: { [app.email]: 'proprietaire' },
-    invites: [],
-    resume: { personnes: 0, sources: 0 }
-  }, tampon(true)));
+  try {
+    await FB.setDoc(refArbre(), Object.assign({
+      nom: NOM_ARBRE_PAR_DEFAUT,
+      membres: [app.email],
+      roles: { [app.email]: 'proprietaire' },
+      invites: [],
+      resume: { personnes: 0, sources: 0 }
+    }, tampon(true)));
+  } catch (e) {
+    // Un refus ici veut dire tout autre chose qu'un refus de lecture : l'arbre
+    // existe déjà et appartient à quelqu'un d'autre, ou la règle `create` n'est
+    // pas celle qu'on croit. Le dire, plutôt que de laisser croire à un
+    // problème de compte.
+    if (e && e.code === 'permission-denied') {
+      throw Object.assign(new Error('creation refusee'), { code: 'creation-refusee' });
+    }
+    throw e;
+  }
 }
 
 /* La descendance n'est stockée nulle part : c'est l'enfant qui porte le lien

@@ -7,7 +7,7 @@ Function** : toute la sécurité tient dans `firestore.rules`. Plan Spark, coût
 nul par utilisateur — c'est la contrainte qui a dicté l'architecture, reprise
 telle quelle de `coaching-musculation`.
 
-**État : maquettes et architecture faites, `index.html` reste à écrire.**
+**État : l'app est écrite et en ligne. Reste à saisir les documents.**
 Reprendre par `REPRISE.md`, qui dit où on en est et par quoi continuer.
 
 ## Où lire quoi
@@ -84,7 +84,7 @@ registre, pas une application de messagerie.
 - Dépôt : `grapinatpwts-crypto/arbre-genealogique` (public — GitHub Pages ne
   sert pas les dépôts privés sur le plan gratuit ; le dépôt ne contient aucune
   donnée familiale, elles vivent dans Firestore)
-- En ligne : https://grapinatpwts-crypto.github.io/arbre-genealogique/ *(actif une fois `index.html` écrit et Pages activé)*
+- En ligne : https://grapinatpwts-crypto.github.io/arbre-genealogique/
 - Firebase : projet `filiation-vasseur`, Firestore en `europe-west9` (Paris),
   Auth Google activée. Config de l'appli web « Arbre généalogique » dans
   `REPRISE.md` (à recopier dans `index.html` une fois écrit).
