@@ -5,9 +5,11 @@ Point d'entrée pour une nouvelle session. Le détail technique est dans
 
 Dernière mise à jour : **5 septembre 2026**.
 
-**Reprendre par** : écrire `index.html` (point 2 ci-dessous), après avoir tranché
-la question de l'arbre initial — la base Firestore est vide, voir « L'arbre
-initial n'existe pas encore ».
+**Reprendre par** : écrire `index.html` (point 2 ci-dessous). Les deux questions
+qui le précédaient sont tranchées — le propriétaire de l'arbre est
+`grapinat.pwts@gmail.com`, et le modèle porte désormais l'inhumation. Il reste à
+créer le document `arbres/{arbreId}`, la base Firestore étant vide : voir
+« L'arbre initial n'existe pas encore ».
 
 ## Ce qui existe
 
@@ -50,7 +52,8 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 2. **Écrire `index.html`** : amorçage Firebase et `window.FB`, connexion Google,
    chargement complet de l'arbre en mémoire, puis les écrans dans cet ordre —
    vue de l'arbre, fiche, édition, rattachement, sources.
-3. **Saisir les premières personnes** à partir des documents de Guillaume
+3. **Saisir les premières personnes** à partir des documents de Guillaume — la
+   page 1 du tableau 505A est déjà transcrite et relue, elle n'attend que l'outil
    (voir ci-dessous).
 4. Membres & partage — seulement quand il y aura quelqu'un à inviter.
 5. Import GEDCOM — pas commencé, c'est ce qui permettra de récupérer un arbre
@@ -71,12 +74,14 @@ e-mail comme propriétaire. Deux façons, à trancher :
   absent. La règle `create` l'autorise, à condition que `membres` vaille
   exactement `[email]` et `roles` la seule clé `email → 'proprietaire'`.
 
-**Attention à quel compte Google.** Les règles identifient par l'e-mail du
-jeton, en minuscules. Le compte utilisé pour le CLI Firebase
-(`grapinat.pwts@gmail.com`) n'est pas forcément celui avec lequel Guillaume se
-connectera dans l'app. C'est ce dernier qui doit figurer comme `proprietaire`,
-sinon la première lecture de l'arbre est refusée — et un refus de règle ne fait
-aucun bruit, l'écran reste sur « Chargement… ».
+**Le propriétaire est `grapinat.pwts@gmail.com`** (tranché le 5 septembre
+2026) — le même compte que le CLI Firebase. Les autres membres seront ajoutés
+depuis l'app, en lecteur / éditeur / propriétaire.
+
+Les règles identifient par l'e-mail du jeton, en minuscules : si le
+`proprietaire` de l'arbre n'est pas exactement le compte utilisé pour se
+connecter, la première lecture est refusée — et un refus de règle ne fait aucun
+bruit, l'écran reste sur « Chargement… ».
 
 ## Configuration Firebase (à recopier dans `index.html` quand il sera écrit)
 
@@ -99,11 +104,30 @@ const firebaseConfig = {
 y ajouter `grapinatpwts-crypto.github.io` au moment d'activer GitHub Pages,
 sinon la connexion Google échouera en ligne alors qu'elle marche en local.
 
-## Ce qu'il faut de Guillaume pour avancer
+## Les documents de Guillaume
 
-- **Les photos des documents familiaux**, à fournir depuis son téléphone. Elles
-  serviront à préciser les premières saisies : noms, dates, lieux, et surtout
-  les **cotes** des actes, qui deviendront les sources.
+**Reçu le 5 septembre 2026 : le « Tableau d'ascendance n° 505A », page 1.** Une
+feuille manuscrite en numérotation Sosa — on part du bas (n° 1, la personne de
+référence) et on remonte, le père de `n` portant le n° `2n` et la mère `2n+1`.
+Le second chiffre en tête de la ligne du haut est le **numéro de page** où
+l'ascendance de cette personne continue ; il ne se stocke pas. Légende de la
+feuille : `°` naissance, `†` décès, `□` inhumation, `x` mariage.
+
+Cette page donne **15 ancêtres (Sosa 1 à 15) + 1 conjoint, et 8 unions**, jusqu'aux
+arrière-grands-parents ; les pages 2 à 9 continuent chacune des huit branches.
+La transcription est faite et relue avec Guillaume, mais elle **ne vit pas dans
+ce dépôt** — il est public et il s'agit de données familiales, dont une personne
+vivante. Elle reste sur le poste, à côté des photos.
+
+C'est ce tableau qui a fait ajouter `inhumation` au modèle (voir `PROJET.md` § 3).
+
+**Restent à obtenir :**
+
+- **Les cotes des actes détenus.** La feuille surligne en rose, sous la mention
+  « Actes détenus », les événements dont Guillaume possède l'acte. Ce sont eux
+  qui deviendront les vraies sources. Question posée, pas encore tranchée : est-ce
+  bien le sens du rose, et les cotes existent-elles déjà quelque part ?
+- **Les pages 2 à 9** du tableau 505A, et les autres documents familiaux.
 
 ### Comment traiter ces images quand elles arrivent
 

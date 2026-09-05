@@ -71,7 +71,7 @@ Firestore ne sait pas interroger les clés d'une map.
 |---|---|---|
 | `nom`, `nom_naissance`, `prenoms` | string | `nom_naissance` vide = identique à `nom` |
 | `sexe` | `'M'` \| `'F'` \| `'?'` | |
-| `naissance`, `deces` | map | `{ date, date_texte, lieu, sources: [sourceId] }` |
+| `naissance`, `deces`, `inhumation` | map | `{ date, date_texte, lieu, sources: [sourceId] }` |
 | `parents` | array\<personneId\> | 0 à 2 entrées — c'est **l'enfant** qui porte le lien |
 | `profession`, `notes` | string | |
 | `cree_par`, `cree_le`, `maj_par`, `maj_le` | | |
@@ -80,6 +80,15 @@ Firestore ne sait pas interroger les clés d'une map.
 civil est une date seule, pas un instant (voir § 6). `date_texte` porte
 l'imprécision réelle des archives — « vers 1899 », « avant 1745 », « an VII » —
 qui n'entre dans aucun format.
+
+**Trois événements, pas deux.** `inhumation` a été ajoutée le 5 septembre 2026 en
+transcrivant le premier tableau d'ascendance de Guillaume : les relevés
+généalogiques portent le lieu de sépulture (« Argenteuil, cimetière de Calais »)
+au même titre que la naissance et le décès, et c'est une information qui a sa
+propre source — un registre de cimetière n'est pas l'acte de décès. La ranger
+dans `notes` aurait fait d'un événement sourçable une ligne de texte libre.
+Elle a exactement la même forme que les deux autres, elle est donc gratuite
+partout : mêmes règles, même bloc d'édition, même rattachement de source.
 
 Le lien de filiation est porté par l'enfant, dans `parents`. Remonter une
 ascendance est alors un simple parcours ; la descendance se calcule par index
@@ -92,6 +101,12 @@ sources: [] }`, `divorce` (même forme ou `null`). Une union n'est pas la liste
 des enfants : les enfants pointent leurs parents eux-mêmes, l'union ne sert
 qu'à porter l'**événement** mariage et ses sources.
 
+`mariage: null` sur une union qui existe quand même veut dire **« non mariés »**,
+et c'est une affirmation, pas un trou : les tableaux d'ascendance l'écrivent noir
+sur blanc pour les couples qui ont eu des enfants sans passer devant l'état civil.
+L'écran doit donc l'afficher tel quel, jamais « mariage inconnu » — ce serait
+inventer une lacune là où il y a un fait.
+
 ### `arbres/{arbreId}/sources/{sourceId}`
 
 `titre`, `type` (`etat-civil` \| `paroissial` \| `recensement` \| `en-ligne` \|
@@ -100,7 +115,7 @@ qu'à porter l'**événement** mariage et ses sources.
 **La source est rattachée à l'événement, pas à la personne.** C'est l'acte n° 112
 qui atteste la naissance du 14 mars 1929 — pas Marcel Vasseur en général. Le
 rattachement vit donc dans `naissance.sources`, `deces.sources`,
-`mariage.sources` : un tableau d'identifiants. Le compte inverse (« rattachée à
+`inhumation.sources`, `mariage.sources` : un tableau d'identifiants. Le compte inverse (« rattachée à
 4 événements ») se calcule en mémoire, il n'est stocké nulle part et ne peut
 donc pas dériver.
 
@@ -130,7 +145,8 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
    sélection d'un cartouche, recentrage sur n'importe qui. *La maquette tient le
    principe mais doit être retravaillée : c'est le chantier design n° 1.*
 4. **Fiche d'une personne** — onglets Fiche / Famille / Sources.
-5. **Édition** — formulaire ; le bloc Décès n'existe que si la personne l'est.
+5. **Édition** — formulaire ; les blocs Décès et Inhumation n'existent que si
+   la personne est décédée.
 6. **Rattacher** — on choisit d'abord le lien (père, mère, conjoint, enfant,
    fratrie), puis la personne : existante ou créée dans la foulée.
 7. **Membres & partage** — invitation par e-mail, changement de rôle.
