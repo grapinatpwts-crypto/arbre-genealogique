@@ -93,32 +93,85 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
 .defile { flex: 1 1 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .vide { padding: 40px 24px; text-align: center; color: var(--encre-4); font-size: 14px; line-height: 1.6; }
 
-/* ── Canevas de l'arbre ───────────────────────────────────────────── */
-#canevas.tiroir-ouvert .zoom { bottom: 158px; }
+/* ── Le parchemin ─────────────────────────────────────────────────────
+   Un parchemin unique qui défile, pas un arbre de cartouches : chaque personne
+   est écrite DANS le support, comme une mention d'acte. Trois signaux disent
+   l'ancienneté d'une ligne — l'usure de la peau, la main qui écrit, l'encre qui
+   bave. Les valeurs viennent de la maquette « Vue Arbre » ; le raisonnement est
+   dans DESIGN-LIGNEE.md, à ouvrir avant d'y toucher. */
+#canevas.tiroir-ouvert .zoom, #canevas.tiroir-ouvert #legende { bottom: 190px; }
 #canevas {
   flex: 1 1 0; position: relative; overflow: hidden; touch-action: none;
-  background-color: var(--creme-fonce);
-  background-image: radial-gradient(#D9CDB8 1px, transparent 1px);
-  background-size: 22px 22px;
-  border-top: 1px solid var(--filet-clair); border-bottom: 1px solid var(--filet-clair);
+  background: #DACBA8;   /* hors feuille : la table sous le parchemin */
+  border-top: 1px solid var(--filet-fonce); border-bottom: 1px solid var(--filet-fonce);
+  cursor: grab;
 }
 #plan { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
-.cartouche {
-  position: absolute; background: var(--carte); border: 1px solid var(--filet-fonce); border-radius: 4px;
-  padding: 8px 11px; display: flex; flex-direction: column; justify-content: center; gap: 2px;
-  cursor: pointer; box-shadow: 0 1px 0 rgba(31,26,20,.05); overflow: hidden; text-align: left;
-}
-.cartouche.actif { border-color: var(--sanguine); box-shadow: 0 0 0 3px rgba(154,82,51,.18); }
-.cartouche.souche { border-color: var(--encre-2); }
-.cartouche b { font-family: 'EB Garamond', Georgia, serif; font-size: 14.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cartouche i { font-style: normal; font-size: 11px; color: var(--encre-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.cartouche em { font-style: normal; font-size: 10px; color: var(--encre-5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.zoom { position: absolute; right: 14px; bottom: 14px; transition: bottom .18s; display: flex; flex-direction: column; gap: 1px; background: var(--filet-fonce); border: 1px solid var(--filet-fonce); border-radius: 4px; overflow: hidden; }
+#parchemin {
+  position: relative;
+  background-color: #EBDFC2;
+  /* Teinte qui brunit vers le haut — le côté ancien — et grain de fibre. */
+  background-image:
+    linear-gradient(to top, rgba(120,84,42,0) 34%, rgba(120,84,42,.16) 62%, rgba(104,70,34,.34) 86%, rgba(88,58,28,.5) 100%),
+    repeating-linear-gradient(to bottom, rgba(140,106,60,.05) 0px, rgba(140,106,60,.05) 1px, transparent 1px, transparent 5px);
+  box-shadow: inset 0 0 34px rgba(96,60,24,.55), inset 0 0 90px rgba(112,74,34,.28);
+}
+/* Taches et piqûres : denses en haut, rares en bas. En `multiply` pour qu'elles
+   assombrissent la peau au lieu de se poser dessus. */
+#piqures {
+  position: absolute; inset: 0; pointer-events: none; mix-blend-mode: multiply; opacity: .62;
+  background-image:
+    radial-gradient(ellipse 120px 70px at 12% 6%, rgba(112,74,34,.55), transparent 70%),
+    radial-gradient(ellipse 90px 60px at 78% 3%, rgba(120,80,38,.5), transparent 70%),
+    radial-gradient(circle 46px at 34% 12%, rgba(126,86,42,.42), transparent 70%),
+    radial-gradient(circle 30px at 62% 17%, rgba(126,86,42,.36), transparent 70%),
+    radial-gradient(ellipse 140px 60px at 90% 22%, rgba(118,78,36,.32), transparent 72%),
+    radial-gradient(circle 34px at 8% 26%, rgba(122,82,40,.3), transparent 70%),
+    radial-gradient(circle 24px at 48% 31%, rgba(122,82,40,.24), transparent 70%),
+    radial-gradient(ellipse 120px 50px at 20% 40%, rgba(124,86,44,.18), transparent 74%),
+    radial-gradient(circle 22px at 86% 46%, rgba(124,86,44,.16), transparent 70%),
+    radial-gradient(circle 18px at 30% 58%, rgba(124,86,44,.12), transparent 70%);
+}
+/* Le haut de la feuille se perd dans l'ombre. */
+#bandeau {
+  position: absolute; left: 0; right: 0; top: 0; height: 110px; pointer-events: none;
+  mix-blend-mode: multiply; opacity: .7;
+  background: linear-gradient(to top, rgba(120,80,36,0), rgba(120,80,36,.5) 70%, rgba(96,62,26,.72) 100%);
+}
+#traits { position: absolute; left: 0; top: 0; overflow: visible; }
+
+.mention {
+  position: absolute; transform: translate(-50%, -50%); cursor: pointer; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  background: none; border: 0; padding: 0;
+}
+.mention .nom { display: flex; align-items: center; justify-content: center; }
+.mention .nom > span { border-bottom: 1px solid transparent; padding-bottom: 2px; display: inline-block; }
+.mention .dates, .mention .lieu { white-space: nowrap; }
+.mention .lieu { font-style: italic; opacity: .66; }
+.mention .dates { opacity: .82; }
+
+.siecle { position: absolute; font-size: 17px; letter-spacing: .22em; text-transform: uppercase; color: #6B4522; }
+.lacune {
+  position: absolute; left: 50%; transform: translate(-50%, -50%);
+  font-family: 'Times New Roman', Times, serif; font-style: italic; font-size: 18px;
+  color: #6B4522; white-space: nowrap; letter-spacing: .04em;
+}
+
+#legende {
+  position: absolute; left: 14px; bottom: 14px; display: flex; align-items: center; gap: 12px;
+  padding: 7px 10px; background: rgba(251,247,239,.9); border: 1px solid var(--filet-fonce);
+  border-radius: 3px; transition: bottom .18s;
+}
+#legende span { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--encre-3); }
+#legende i { width: 6px; height: 6px; border: 1px solid; display: block; }
+
+.zoom { position: absolute; right: 14px; bottom: 14px; transition: bottom .18s; display: flex; flex-direction: column; gap: 1px; background: var(--filet-fonce); border: 1px solid var(--filet-fonce); border-radius: 3px; overflow: hidden; }
 .zoom button { width: 44px; height: 44px; background: var(--carte); border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
 #tiroir[hidden] { display: none; }
-#tiroir { position: absolute; left: 0; right: 0; bottom: 0; background: var(--carte); border-top: 1px solid var(--filet-fonce); padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+#tiroir { position: absolute; left: 0; right: 0; bottom: 0; background: var(--carte); border-top: 1px solid var(--filet-fonce); padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
 
 /* ── Fiche ────────────────────────────────────────────────────────── */
 .onglets-fiche { display: flex; gap: 22px; border-bottom: 1px solid var(--filet); }
@@ -231,10 +284,10 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
   <div class="haut" style="padding-left: 18px; padding-right: 18px; display: flex; flex-direction: column; gap: 14px">
     <div class="entete">
       <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0">
-        <span class="surtitre">Arbre</span>
+        <span class="surtitre">Lignée</span>
         <span class="serif" id="nom-arbre" style="font-size: 20px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"></span>
       </div>
-      <button class="icone-bouton" id="b-deconnexion" title="Se déconnecter">
+      <button class="icone-bouton" id="b-deconnexion" title="Menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#4A4137"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
       </button>
     </div>
@@ -243,35 +296,50 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
       <button data-vue="desc">Descendants</button>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--encre-3); min-height: 30px">
-      <span class="surtitre" id="mot-ancre">Ascendance de</span>
+      <span class="surtitre" id="mot-ancre" style="white-space: nowrap">Ascendance de</span>
       <span class="serif" id="nom-ancre" style="font-size: 15px; color: var(--encre); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap"></span>
-      <button class="lien" id="b-recentrer" style="border: 1px solid var(--filet-fonce); border-radius: 2px; padding: 5px 9px; font-size: 11px; color: var(--encre-2)">Recentrer</button>
+      <button class="lien" id="b-recentrer" style="border: 1px solid var(--filet-fonce); border-radius: 2px; padding: 6px 9px; font-size: 11px; color: var(--encre-2); white-space: nowrap">Recentrer</button>
     </div>
   </div>
 
   <div id="canevas">
     <div id="plan">
-      <svg id="traits" style="position: absolute; left: 0; top: 0; overflow: visible" fill="none"></svg>
-      <div id="cartouches"></div>
+      <div id="parchemin">
+        <div id="piqures"></div>
+        <div id="bandeau"></div>
+        <svg id="traits" fill="none"></svg>
+        <div id="siecles"></div>
+        <div id="lacunes"></div>
+        <div id="mentions"></div>
+      </div>
     </div>
+
+    <div id="legende">
+      <span><i style="background: var(--bleu); border-color: var(--bleu)"></i>sourcé</span>
+      <span><i style="background: none; border-color: var(--encre-5)"></i>sans source</span>
+    </div>
+
     <div class="zoom">
       <button id="b-plus" aria-label="Agrandir"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg></button>
       <button id="b-moins" aria-label="Réduire"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M5 12h14"/></svg></button>
-      <button id="b-ajuster" aria-label="Tout voir"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>
+      <button id="b-ajuster" aria-label="Viser la sélection"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>
     </div>
+
     <div id="tiroir" hidden>
       <div style="display: flex; align-items: flex-start; gap: 12px">
         <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 0">
           <span class="serif" id="tiroir-nom" style="font-size: 24px; line-height: 1.1"></span>
           <span class="num" id="tiroir-detail" style="font-size: 12.5px; color: var(--encre-3)"></span>
+          <span id="tiroir-epoque" style="font-size: 11px; color: var(--encre-5); letter-spacing: .06em"></span>
         </div>
         <button class="icone-bouton" id="b-fermer-tiroir" style="width: 32px; height: 32px; margin: 0">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A7D6D" stroke-width="1.8" stroke-linecap="square"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
+      <div id="tiroir-source" style="display: flex; align-items: center; gap: 8px; font-size: 11.5px"></div>
       <div style="display: flex; gap: 10px">
-        <button class="bouton" id="b-ouvrir-fiche" style="flex: 1 1 0; height: 46px; font-size: 14.5px">Ouvrir la fiche</button>
-        <button class="bouton creux" id="b-recentrer-sur" style="flex: 1 1 0; height: 46px; font-size: 14.5px">Recentrer ici</button>
+        <button class="bouton" id="b-ouvrir-fiche" style="flex: 1 1 0; height: 46px; font-size: 14.5px; border-radius: 3px">Ouvrir la fiche</button>
+        <button class="bouton creux" id="b-pivoter" style="flex: 1 1 0; height: 46px; font-size: 14.5px; border-radius: 3px">Voir sa descendance</button>
       </div>
     </div>
   </div>
@@ -553,11 +621,6 @@ function nomComplet(p) {
   if (!p) return '';
   return ((p.prenoms || '') + ' ' + (p.nom || '')).trim() || 'Sans nom';
 }
-function nomCourt(p) {
-  if (!p) return '';
-  const premier = (p.prenoms || '').trim().split(/[\s,]+/)[0] || '';
-  return (premier + ' ' + (p.nom || '')).trim() || 'Sans nom';
-}
 function initiales(p) {
   const a = (p.prenoms || '').trim()[0] || '';
   const b = (p.nom || '').trim()[0] || '';
@@ -807,7 +870,7 @@ async function majResume() {
 
 const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'fiche', 'edition', 'rattacher', 'import'];
 const ONGLETS = [
-  { id: 'arbre', nom: 'Arbre', icone: 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z' },
+  { id: 'arbre', nom: 'Lignée', icone: 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z' },
   { id: 'personnes', nom: 'Personnes', icone: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4' },
   { id: 'sources', nom: 'Sources', icone: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4' }
 ];
@@ -844,189 +907,327 @@ function construireOnglets() {
   }
 }
 
-/* ══ Canevas de l'arbre ═══════════════════════════════════════════════
-   Le tracé est calculé ici puis posé en coordonnées absolues dans #plan, que
-   le pan/zoom déplace d'un seul `transform`. Déplacer un conteneur unique est
-   ce qui garde le geste fluide : repositionner 60 cartouches à chaque frame ne
-   l'était pas. */
+/* ══ La lignée, sur un parchemin ══════════════════════════════════════
+   Porté depuis la maquette « Vue Arbre » ; le raisonnement complet, y compris
+   les deux régressions à ne pas refaire, est dans DESIGN-LIGNEE.md. Il n'y a
+   ni cartouche ni encadré : chaque personne est écrite dans le support, et
+   c'est la main qui écrit — police, italique, approche, bavure — qui dit le
+   siècle. */
 
-const LARGEUR = 146, HAUTEUR = 58, ECART = 14, ETAGE = 118, GENERATIONS_MAX = 6;
-const GENERATIONS_CADREES = 2;  // souche + parents + grands-parents
+const PLUME = "'Tangerine', 'Great Vibes', 'Snell Roundhand', 'Apple Chancery', " +
+  "'Monotype Corsiva', 'Lucida Calligraphy', 'Lucida Handwriting', 'Segoe Script', " +
+  "'Ink Free', 'Brush Script MT', cursive";
 
-function poserAscendance(racine) {
-  const cartes = [], liens = [];
-  const mesurer = (id, gen, chemin) => {
-    if (gen >= GENERATIONS_MAX || chemin.has(id)) return LARGEUR + ECART;
-    const ps = parentsDe(id);
-    if (!ps.length) return LARGEUR + ECART;
-    const suite = new Set(chemin).add(id);
-    let somme = 0;
-    for (const p of ps) somme += mesurer(p, gen + 1, suite);
-    return Math.max(LARGEUR + ECART, somme);
-  };
-  const poser = (id, gen, x0, chemin) => {
-    const large = mesurer(id, gen, chemin);
-    const carte = { id, gen, x: x0 + large / 2 - LARGEUR / 2, y: -gen * ETAGE };
-    cartes.push(carte);
-    if (gen >= GENERATIONS_MAX || chemin.has(id)) return carte;
-    const suite = new Set(chemin).add(id);
-    let x = x0;
-    for (const p of parentsDe(id)) {
-      liens.push([poser(p, gen + 1, x, suite), carte]);
-      x += mesurer(p, gen + 1, suite);
-    }
-    return carte;
-  };
-  poser(racine, 0, 0, new Set());
-  return { cartes, liens };
+/* Aucune police distante : un appel Google Fonts qui échoue rendrait toutes les
+   époques identiques, et l'écran perdrait son seul repère de datation. Que des
+   piles système. Calibri après 1900, Times avant 1900, anglaise avant 1700. */
+const ERES = {
+  contemporain: { police: "Calibri, 'Segoe UI', system-ui, sans-serif", italique: 'normal', variante: 'normal', espace: '0.005em', encre: '#2C2317', bavure: 'none', chiffres: 'tabular-nums', nomSiecle: 'XXIᵉ siècle', epoque: 'Relevé contemporain' },
+  moderne: { police: "Calibri, 'Segoe UI', system-ui, sans-serif", italique: 'normal', variante: 'normal', espace: '0.03em', encre: '#33291C', bavure: 'none', chiffres: 'tabular-nums', nomSiecle: 'XXᵉ siècle', epoque: 'État civil, XXᵉ siècle' },
+  belleEpoque: { police: "'Times New Roman', Times, serif", italique: 'normal', variante: 'small-caps', espace: '0.1em', encre: '#33261A', bavure: '0 0 0.5px rgba(51,38,26,0.35)', chiffres: 'normal', nomSiecle: 'XIXᵉ siècle', epoque: "Registres d'état civil, XIXᵉ" },
+  empire: { police: "'Times New Roman', Times, serif", italique: 'italic', variante: 'normal', espace: '0.12em', encre: '#2B2014', bavure: '0 0 0.8px rgba(43,32,20,0.4)', chiffres: 'normal', nomSiecle: 'Début XIXᵉ', epoque: 'Actes révolutionnaires et impériaux' },
+  /* L'inclinaison porte la main courante là où aucune anglaise n'est installée —
+     sans elle, l'Ancien Régime retombe en Times et l'écart de siècle disparaît. */
+  ancienRegime: { police: PLUME, penche: 'skewX(-13deg)', italique: 'italic', variante: 'normal', espace: '0.02em', encre: '#291E12', bavure: '0 0 1px rgba(41,30,18,0.45)', chiffres: 'normal', nomSiecle: 'XVIIᵉ siècle', epoque: 'Registres paroissiaux, Ancien Régime' },
+  renaissance: { police: PLUME, penche: 'skewX(-17deg)', italique: 'italic', variante: 'normal', espace: '0.04em', encre: '#241A0F', bavure: '0 0 1.3px rgba(36,26,15,0.5)', chiffres: 'normal', nomSiecle: 'XVIᵉ siècle', epoque: 'Terrier seigneurial, XVIᵉ' }
+};
+
+/* La maquette attachait l'ère au rang de la génération ; ici les dates sont
+   réelles, alors c'est l'année qui décide — une génération peut chevaucher deux
+   siècles, et c'est le document qui a raison, pas le comptage. */
+function ereDeAnnee(a) {
+  const n = Number(a);
+  if (!n) return null;
+  if (n >= 1950) return 'contemporain';
+  if (n >= 1900) return 'moderne';
+  if (n >= 1830) return 'belleEpoque';
+  if (n >= 1700) return 'empire';
+  if (n >= 1600) return 'ancienRegime';
+  return 'renaissance';
+}
+/* L'ère d'une rangée est celle de sa personne la plus ancienne : dans un couple
+   à cheval sur 1900, c'est l'aînée qui donne le ton du support. */
+function ereDeRangee(ids) {
+  let plusVieille = null;
+  for (const id of ids) {
+    const p = app.personnes.get(id);
+    const a = Number(anneeApprochee(p && p.naissance));
+    if (a && (!plusVieille || a < plusVieille)) plusVieille = a;
+  }
+  return ereDeAnnee(plusVieille) || 'contemporain';
 }
 
-function poserDescendance(racine) {
-  const cartes = [], liens = [];
-  const mesurer = (id, gen, chemin) => {
-    if (gen >= GENERATIONS_MAX || chemin.has(id)) return LARGEUR + ECART;
-    const es = enfantsDe(id);
-    if (!es.length) return LARGEUR + ECART;
-    const suite = new Set(chemin).add(id);
-    let somme = 0;
-    for (const e of es) somme += mesurer(e, gen + 1, suite);
-    return Math.max(LARGEUR + ECART, somme);
-  };
-  const poser = (id, gen, x0, chemin) => {
-    const large = mesurer(id, gen, chemin);
-    const carte = { id, gen, x: x0 + large / 2 - LARGEUR / 2, y: gen * ETAGE };
-    cartes.push(carte);
-    if (gen >= GENERATIONS_MAX || chemin.has(id)) return carte;
-    const suite = new Set(chemin).add(id);
-    let x = x0;
-    for (const e of enfantsDe(id)) {
-      liens.push([carte, poser(e, gen + 1, x, suite)]);
-      x += mesurer(e, gen + 1, suite);
+/* Aucun décalage vertical n'est écrit en dur : le bloc de texte n'a pas la même
+   hauteur selon l'époque, et tout — alliance, filiation, repère de siècle — s'en
+   déduit. Deux lignes de nom sont TOUJOURS réservées, pour que la hauteur
+   calculée et la hauteur rendue coïncident, avec ou sans retour à la ligne. */
+function corps(ere) {
+  const vieux = ere === 'renaissance' || ere === 'ancienRegime' || ere === 'empire';
+  const taille = ere === 'renaissance' ? 26 : ere === 'ancienRegime' ? 24 : ere === 'empire' ? 22 : 19;
+  const tailleDate = vieux ? 17 : 13.5;
+  const tailleLieu = vieux ? 15 : 12;
+  const lh = Math.ceil(taille * 1.14);   // interligne ENTIER : fractionnaire, il tranchait la 2e ligne
+  const hNom = lh * 2;
+  const h = hNom + 2 + 3 + tailleDate * 1.3 + 3 + tailleLieu * 1.3;
+  return { taille, tailleDate, tailleLieu, lh, hNom, demi: h / 2 };
+}
+
+/* Un lien n'est jamais un connecteur orthogonal ni un trait d'épaisseur
+   constante — ça faisait câble. C'est un chemin rempli : deux courbes en S
+   refermées, fine du côté de l'ancêtre, épaisse du côté du descendant. */
+function plume(x0, y0, x1, y1, w0, w1, dev) {
+  const k = (y1 - y0) * 0.62;
+  const a = x0 + dev, b = x1 - dev;
+  return 'M ' + (x0 - w0 / 2) + ' ' + y0 + ' C ' + (a - w0 / 2) + ' ' + (y0 + k) + ' ' + (b - w1 / 2) + ' ' + (y1 - k) + ' ' + (x1 - w1 / 2) + ' ' + y1 +
+    ' L ' + (x1 + w1 / 2) + ' ' + y1 + ' C ' + (b + w1 / 2) + ' ' + (y1 - k) + ' ' + (a + w0 / 2) + ' ' + (y0 + k) + ' ' + (x0 + w0 / 2) + ' ' + y0 + ' Z';
+}
+
+/* Bord déchiqueté, plus mordu en haut — le côté ancien. Générateur à graine
+   fixe : le même arbre garde la même découpe d'un affichage à l'autre. */
+function dechirure(largeur, hauteur) {
+  let g = 4711;
+  const r = () => { g = (g * 9301 + 49297) % 233280; return g / 233280; };
+  const p = [];
+  const amp = y => 5 + 13 * (1 - y / hauteur);
+  for (let x = 0; x <= largeur; x += 26) p.push([x + (r() - 0.5) * 8, amp(0) * r()]);
+  for (let y = 40; y <= hauteur - 40; y += 46) p.push([largeur - amp(y) * r(), y]);
+  for (let x = largeur; x >= 0; x -= 30) p.push([x, hauteur - 7 * r()]);
+  for (let y = hauteur - 40; y >= 40; y -= 46) p.push([amp(y) * r(), y]);
+  return 'polygon(' + p.map(q => q[0].toFixed(1) + 'px ' + q[1].toFixed(1) + 'px').join(', ') + ')';
+}
+
+const PAS = 168, MARGE = 96, ECH = 0.7, GENERATIONS_MAX = 8;
+
+/* Combien de sources distinctes attestent les événements d'une personne. */
+function actesDe(id) {
+  const vues = new Set();
+  for (const e of evenementsDe(id)) for (const s of e.ev.sources || []) vues.add(s);
+  return vues.size;
+}
+
+/* Les rangées : une par génération, du plus récent au plus ancien en
+   ascendance, l'inverse en descendance. Une personne qui apparaîtrait deux fois
+   (implexe) n'est gardée qu'à sa première rangée : la même main ne réécrit pas
+   deux fois le même nom sur la feuille. */
+function rangeesDepuis(ancre, vue) {
+  const rangees = [];
+  const placees = new Set();
+  let courante = [ancre];
+  for (let g = 0; g < GENERATIONS_MAX && courante.length; g++) {
+    const ligne = courante.filter(id => app.personnes.has(id) && !placees.has(id));
+    if (!ligne.length) break;
+    for (const id of ligne) placees.add(id);
+    rangees.push(ligne);
+    const suivante = [];
+    for (const id of ligne) {
+      for (const x of (vue === 'asc' ? parentsDe(id) : enfantsDe(id))) {
+        if (!placees.has(x) && !suivante.includes(x)) suivante.push(x);
+      }
     }
-    return carte;
-  };
-  const souche = poser(racine, 0, 0, new Set());
-  /* Les conjoints de la souche se posent à côté d'elle, sans descendance propre :
-     l'arbre de descendance montre une lignée, pas deux. */
-  let dx = souche.x + LARGEUR + ECART;
-  for (const c of conjointsDe(racine)) {
-    cartes.push({ id: c.id, gen: 0, x: dx, y: 0, conjoint: true });
-    dx += LARGEUR + ECART;
+    courante = suivante;
   }
-  return { cartes, liens };
+  return rangees;
+}
+
+/* Le parchemin fait la largeur de l'écran à l'échelle d'ouverture — c'est ce qui
+   garde le texte lisible sans zoomer. Mais huit arrière-grands-parents ne
+   tiennent pas dans 560 px : au-delà de quatre par rangée, la feuille s'élargit
+   et l'on déroule latéralement, plutôt que d'écrire trop petit pour être lu. */
+function largeurParchemin(rangees) {
+  const maxi = rangees.reduce((m, r) => Math.max(m, r.length), 1);
+  return Math.max(560, maxi * 150);
+}
+
+const plan = { x: 0, y: 0, k: ECH, largeur: 0, hauteur: 0 };
+let disposition = null;
+
+function calculerDisposition() {
+  if (!app.ancre || !app.personnes.has(app.ancre)) return null;
+  const asc = app.vue === 'asc';
+  const rangees = rangeesDepuis(app.ancre, app.vue);
+  const largeur = largeurParchemin(rangees);
+  const hauteur = MARGE * 2 + (rangees.length - 1) * PAS;
+  const pos = {};
+  const lignes = rangees.map((ids, i) => {
+    // En ascendance le présent est en bas et l'on remonte le temps en remontant
+    // la feuille ; en descendance l'ordre s'inverse.
+    const y = asc ? hauteur - MARGE - i * PAS : MARGE + i * PAS;
+    const ere = ereDeRangee(ids);
+    // Chaque rangée se resserre autour du centre au lieu de s'étaler sur toute
+    // la feuille : sans ça, la largeur imposée par les huit arrière-grands-
+    // parents écartait les deux parents de la souche de six cents pixels, et
+    // ils sortaient de l'écran alors qu'ils sont ce qu'on regarde en premier.
+    const pas = Math.min(largeur / ids.length, 246);
+    const large = Math.min(205, pas - 12);
+    const centre = largeur / 2;
+    ids.forEach((id, j) => {
+      pos[id] = { x: centre + (j - (ids.length - 1) / 2) * pas, y, w: large, ere, indice: i };
+    });
+    return { y, ids, ere, indice: i };
+  });
+  return { rangees, lignes, pos, largeur, hauteur, asc, total: rangees.length };
 }
 
 function dessinerArbre() {
-  const hote = $('#cartouches'), svg = $('#traits');
-  if (!app.ancre || !app.personnes.has(app.ancre)) {
-    hote.innerHTML = '';
-    svg.innerHTML = '';
+  disposition = calculerDisposition();
+  const hoteMentions = $('#mentions'), hoteSiecles = $('#siecles'), hoteLacunes = $('#lacunes');
+  const svg = $('#traits'), feuille = $('#parchemin');
+  if (!disposition) {
+    hoteMentions.innerHTML = hoteSiecles.innerHTML = hoteLacunes.innerHTML = svg.innerHTML = '';
     return;
   }
-  const { cartes, liens } = app.vue === 'asc' ? poserAscendance(app.ancre) : poserDescendance(app.ancre);
+  const d = disposition;
+  const { pos, largeur, hauteur, asc } = d;
 
-  // Tout ramener dans le quadrant positif : les ascendants sont posés en y négatif.
-  const minX = Math.min.apply(null, cartes.map(c => c.x));
-  const minY = Math.min.apply(null, cartes.map(c => c.y));
-  for (const c of cartes) { c.x -= minX; c.y -= minY; }
-  const largeurTotale = Math.max.apply(null, cartes.map(c => c.x + LARGEUR));
-  const hauteurTotale = Math.max.apply(null, cartes.map(c => c.y + HAUTEUR));
+  feuille.style.width = largeur + 'px';
+  feuille.style.height = hauteur + 'px';
+  feuille.style.clipPath = dechirure(largeur, hauteur);
+  svg.setAttribute('width', largeur);
+  svg.setAttribute('height', hauteur);
+  svg.setAttribute('viewBox', '0 0 ' + largeur + ' ' + hauteur);
 
-  hote.innerHTML = cartes.map(c => {
-    const p = app.personnes.get(c.id);
-    const classes = ['cartouche'];
-    if (c.id === app.selection) classes.push('actif');
-    if (c.id === app.ancre) classes.push('souche');
-    return '<button class="' + classes.join(' ') + '" data-id="' + ech(c.id) + '" style="left:' + c.x +
-      'px; top:' + c.y + 'px; width:' + LARGEUR + 'px; height:' + HAUTEUR + 'px">' +
-      '<b>' + ech(nomCourt(p)) + '</b>' +
-      '<i>' + ech(bornes(p) || '—') + '</i>' +
-      '<em>' + ech((p.naissance && p.naissance.lieu) || '') + '</em>' +
-      '</button>';
-  }).join('');
+  // 0 pour la rangée la plus récente, 1 pour la plus ancienne : l'encre pâlit
+  // et les traits s'affinent à mesure qu'on remonte.
+  const age = i => (d.total > 1 ? i / (d.total - 1) : 0);
 
-  // Une équerre par lien : on descend du parent, on va au droit de l'enfant, on
-  // rejoint son bord. Le tracé orthogonal se lit mieux qu'une diagonale quand
-  // deux parents partagent le même enfant.
-  const traits = liens.map(([haut, bas]) => {
-    const xh = haut.x + LARGEUR / 2, xb = bas.x + LARGEUR / 2;
-    const yh = haut.y + HAUTEUR, yb = bas.y;
-    const milieu = (yh + yb) / 2;
-    return 'M' + xb + ' ' + yb + 'V' + milieu + 'H' + xh + 'V' + yh;
-  }).join(' ');
-  svg.setAttribute('width', largeurTotale);
-  svg.setAttribute('height', hauteurTotale);
-  svg.innerHTML = '<path d="' + traits + '" stroke="#B9A98E" stroke-width="1.3"/>';
+  const mentions = [], unions = [], filiations = [], siecles = [];
+  let dernierSiecle = null;
 
-  plan.largeur = largeurTotale;
-  plan.hauteur = hauteurTotale;
-  cartesPosees = cartes;
+  for (const l of d.lignes) {
+    const a = age(l.indice);
+    const e = ERES[l.ere], c = corps(l.ere);
+    if (e.nomSiecle !== dernierSiecle) {
+      dernierSiecle = e.nomSiecle;
+      // En marge de SA rangée, pas du parchemin : sur une feuille large, un
+      // repère collé au bord gauche n'est jamais dans le champ.
+      const premier = pos[l.ids[0]];
+      const gauche = Math.max(8, premier.x - premier.w / 2);
+      siecles.push('<span class="siecle" style="left:' + gauche.toFixed(0) + 'px; top:' + (l.y - c.demi - 34) +
+        'px; font-family:' + e.police + '; opacity:' + (0.5 - a * 0.15).toFixed(2) + '">' + ech(e.nomSiecle) + '</span>');
+    }
+
+    for (const id of l.ids) {
+      const p = app.personnes.get(id), q = pos[id];
+      const actif = id === app.selection;
+      const style = 'left:' + q.x.toFixed(0) + 'px; top:' + l.y + 'px; width:' + q.w.toFixed(0) + 'px; opacity:' + (1 - a * 0.28).toFixed(2);
+      const commun = 'font-family:' + e.police + '; font-variant:' + e.variante + '; color:' + e.encre + '; letter-spacing:' + e.espace;
+      mentions.push('<button class="mention" data-id="' + ech(id) + '" style="' + style + '">' +
+        '<span class="nom" style="height:' + c.hNom + 'px"><span style="' + commun +
+          '; font-style:' + e.italique + '; font-size:' + c.taille + 'px; line-height:' + c.lh + 'px' +
+          '; text-shadow:' + e.bavure + '; border-bottom-color:' + (actif ? 'var(--sanguine)' : 'transparent') +
+          '; transform:' + (e.penche || 'none') + '">' + ech(nomComplet(p)) + '</span></span>' +
+        '<span class="dates" style="' + commun + '; font-size:' + c.tailleDate + 'px; font-variant-numeric:' + e.chiffres + '">' +
+          ech(bornes(p) || '—') + '</span>' +
+        '<span class="lieu" style="' + commun + '; font-size:' + c.tailleLieu + 'px">' +
+          ech((p.naissance && p.naissance.lieu) || (p.profession || '')) + '</span>' +
+        '</button>');
+    }
+
+    // Alliance : un swash sous le couple, jamais une barre droite ni un cadre.
+    const vus = new Set();
+    for (const id of l.ids) {
+      for (const c2 of conjointsDe(id)) {
+        if (!pos[c2.id] || pos[c2.id].y !== l.y) continue;
+        const cle = [id, c2.id].sort().join('|');
+        if (vus.has(cle)) continue;
+        vus.add(cle);
+        const a1 = pos[id], a2 = pos[c2.id];
+        const y = l.y + c.demi + 14, mi = (a1.x + a2.x) / 2;
+        unions.push('<path d="M ' + a1.x + ' ' + (y - 7) + ' C ' + a1.x + ' ' + (y + 3) + ' ' + (mi - 26) + ' ' + (y + 3) + ' ' + mi + ' ' + (y + 1) +
+          ' C ' + (mi + 26) + ' ' + (y + 3) + ' ' + a2.x + ' ' + (y + 3) + ' ' + a2.x + ' ' + (y - 7) +
+          ' C ' + (a2.x - 1.2) + ' ' + (y + 1.5) + ' ' + (mi + 26) + ' ' + (y + 5) + ' ' + mi + ' ' + (y + 3.2) +
+          ' C ' + (mi - 26) + ' ' + (y + 5) + ' ' + (a1.x + 1.2) + ' ' + (y + 1.5) + ' ' + a1.x + ' ' + (y - 7) + ' Z"' +
+          ' fill="#241A0F" opacity="' + (0.72 - a * 0.18).toFixed(2) + '"/>');
+      }
+    }
+
+    // Filiation : une descente à main levée du couple vers l'enfant. Les deux
+    // parents d'un même enfant sont regroupés — le trait part de leur milieu.
+    const paires = {};
+    for (const id of l.ids) {
+      for (const enf of (asc ? enfantsDe(id) : parentsDe(id))) {
+        if (!pos[enf] || pos[enf].indice !== l.indice - (asc ? 1 : -1)) continue;
+        (paires[enf] = paires[enf] || []).push(pos[id]);
+      }
+    }
+    for (const enf of Object.keys(paires)) {
+      const par = paires[enf], cible = pos[enf];
+      const mx = par.reduce((s, x) => s + x.x, 0) / par.length;
+      const y0 = l.y + (asc ? c.demi + 20 : -(c.demi + 20));
+      const y1 = cible.y + (asc ? -(corps(cible.ere).demi + 14) : corps(cible.ere).demi + 14);
+      // Un dévers latéral même sur un lien vertical : sans lui, le S disparaît.
+      const dev = (cible.x >= mx ? 1 : -1) * (16 + Math.min(26, Math.abs(cible.x - mx) * 0.18));
+      filiations.push('<path d="' + plume(mx, y0, cible.x, y1, 1.6, 5.4, dev) +
+        '" fill="#241A0F" opacity="' + (0.86 - a * 0.16).toFixed(2) + '"/>');
+    }
+  }
+
+  // Deux traits de plume au pied de la feuille — la main du relevé récent.
+  const yPied = hauteur - 34;
+  const fioritures =
+    '<path d="M ' + (largeur * 0.34) + ' ' + yPied + ' C ' + (largeur * 0.42) + ' ' + (yPied - 8) + ' ' + (largeur * 0.58) + ' ' + (yPied + 8) + ' ' + (largeur * 0.66) + ' ' + yPied + '" stroke="#3A2A18" stroke-width="1" opacity="0.35" fill="none" stroke-linecap="round"/>' +
+    '<path d="M ' + (largeur * 0.4) + ' ' + (yPied + 7) + ' C ' + (largeur * 0.46) + ' ' + (yPied + 2) + ' ' + (largeur * 0.54) + ' ' + (yPied + 12) + ' ' + (largeur * 0.6) + ' ' + (yPied + 7) + '" stroke="#3A2A18" stroke-width="1" opacity="0.22" fill="none" stroke-linecap="round"/>';
+
+  svg.innerHTML = unions.join('') + filiations.join('') + fioritures;
+  hoteSiecles.innerHTML = siecles.join('');
+  hoteLacunes.innerHTML = '';   // voir DESIGN-LIGNEE.md § 7 : une lacune s'atteste, elle ne se devine pas
+  hoteMentions.innerHTML = mentions.join('');
+
+  plan.largeur = largeur;
+  plan.hauteur = hauteur;
 
   const p = app.personnes.get(app.ancre);
-  $('#mot-ancre').textContent = app.vue === 'asc' ? 'Ascendance de' : 'Descendance de';
+  $('#mot-ancre').textContent = asc ? 'Ascendance de' : 'Descendance de';
   $('#nom-ancre').textContent = nomComplet(p);
   rendreTiroir();
 }
 
 /* ── Pan et zoom ─────────────────────────────────────────────────────── */
 
-const plan = { x: 0, y: 0, k: 1, largeur: 0, hauteur: 0 };
-let cartesPosees = [];
 const pointeurs = new Map();
-let distanceInitiale = 0, kInitial = 1, aPane = false, carteTouchee = null;
+let distanceInitiale = 0, kInitial = 1, aPane = false, mentionTouchee = null;
 
 function appliquerPlan() {
   $('#plan').style.transform = 'translate(' + plan.x + 'px,' + plan.y + 'px) scale(' + plan.k + ')';
 }
-function ajusterCanevas() {
+
+/* Le cadrage d'ouverture montre le présent — le bas de la feuille en ascendance,
+   le haut en descendance — et laisse deviner l'usure qui monte. */
+function cadrerSouche() {
   const boite = $('#canevas').getBoundingClientRect();
-  if (!plan.largeur || !boite.width) return;
-  const marge = 20;
-  plan.k = Math.min(1.1, Math.max(0.14,
-    Math.min((boite.width - marge * 2) / plan.largeur, (boite.height - marge * 2) / plan.hauteur)));
-  plan.x = (boite.width - plan.largeur * plan.k) / 2;
-  plan.y = (boite.height - plan.hauteur * plan.k) / 2;
+  if (!disposition || !boite.width) return;
+  const souche = disposition.pos[app.ancre];
+  if (!souche) return;
+  plan.k = ECH;
+  plan.x = boite.width / 2 - souche.x * ECH;
+  // La place de la feuille de sélection est réservée qu'elle soit ouverte ou
+  // non : sinon toucher la souche la fait disparaître sous le tiroir qu'on
+  // vient d'ouvrir sur elle.
+  const marge = 200;
+  plan.y = disposition.asc
+    ? boite.height - marge - souche.y * ECH
+    : marge - souche.y * ECH;
   appliquerPlan();
 }
 
-/* Le cadrage par défaut ne montre que trois générations.
-   Ce n'est pas un choix esthétique, c'est de l'arithmétique : la quatrième
-   génération d'une ascendance complète aligne huit cartouches, soit plus de
-   1 300 px. Les faire tenir dans 390 px réduit les noms à quatre pixels de haut,
-   et cadrer sur la seule souche laisse ses parents hors champ, chacun étant
-   centré sur son propre sous-arbre. On cadre donc la souche, ses parents et ses
-   grands-parents ; le reste est tracé, et se rejoint en panant, en dézoomant,
-   ou en recentrant sur quelqu'un de plus haut. */
-function cadrerSouche() {
-  const boite = $('#canevas').getBoundingClientRect();
-  const proches = cartesPosees.filter(c => c.gen <= GENERATIONS_CADREES);
-  if (!proches.length || !boite.width) return ajusterCanevas();
-  const x0 = Math.min.apply(null, proches.map(c => c.x));
-  const x1 = Math.max.apply(null, proches.map(c => c.x + LARGEUR));
-  const y0 = Math.min.apply(null, proches.map(c => c.y));
-  const y1 = Math.max.apply(null, proches.map(c => c.y + HAUTEUR));
-  const marge = 16;
-  plan.k = Math.min(1.15, Math.max(0.3,
-    Math.min((boite.width - marge * 2) / (x1 - x0), (boite.height - marge * 2) / (y1 - y0))));
-  // Les trois générations donnent l'échelle, pas le point de vue : on centre sur
-  // la souche en largeur (son entourage se lit alors des deux côtés) et sur tout
-  // le tracé en hauteur, sinon l'écran reste vide au-dessus et au-dessous.
-  const souche = cartesPosees.find(c => c.id === app.ancre && !c.conjoint) || proches[0];
-  plan.x = boite.width / 2 - (souche.x + LARGEUR / 2) * plan.k;
-  const hautTout = Math.min.apply(null, cartesPosees.map(c => c.y));
-  const basTout = Math.max.apply(null, cartesPosees.map(c => c.y + HAUTEUR));
-  plan.y = boite.height / 2 - (hautTout + basTout) / 2 * plan.k;
-  appliquerPlan();
-}
-/* Zoomer autour d'un point de l'écran : le point visé doit rester sous le doigt,
-   sinon le contenu fuit dès qu'on pince ailleurs qu'au centre. */
 function zoomerVers(k, cx, cy) {
   const boite = $('#canevas').getBoundingClientRect();
   const px = cx - boite.left, py = cy - boite.top;
-  const nouveau = Math.min(2.4, Math.max(0.18, k));
+  const nouveau = Math.min(1.3, Math.max(0.3, k));
   plan.x = px - (px - plan.x) * (nouveau / plan.k);
   plan.y = py - (py - plan.y) * (nouveau / plan.k);
   plan.k = nouveau;
+  appliquerPlan();
+}
+
+/* Viser la sélection : on la ramène au centre, à taille pleine. */
+function viserSelection() {
+  const boite = $('#canevas').getBoundingClientRect();
+  const q = disposition && disposition.pos[app.selection];
+  if (!q) return cadrerSouche();
+  plan.k = 1;
+  plan.x = boite.width / 2 - q.x;
+  plan.y = boite.height * 0.38 - q.y;
   appliquerPlan();
 }
 
@@ -1037,11 +1238,11 @@ function brancherCanevas() {
     return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
   };
   zone.addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.zoom, #tiroir')) return;
+    if (e.target.closest('.zoom, #tiroir, #legende')) return;
     pointeurs.set(e.pointerId, { x: e.clientX, y: e.clientY });
     aPane = false;
-    const carte = e.target.closest('.cartouche');
-    carteTouchee = carte ? carte.dataset.id : null;
+    const m = e.target.closest('.mention');
+    mentionTouchee = m ? m.dataset.id : null;
     if (pointeurs.size === 2) {
       const [a, b] = Array.from(pointeurs.values());
       distanceInitiale = Math.hypot(a.x - b.x, a.y - b.y);
@@ -1073,37 +1274,40 @@ function brancherCanevas() {
     if (pointeurs.size < 2) distanceInitiale = 0;
   };
   zone.addEventListener('pointerup', (e) => {
-    // La sélection se fait ici, pas sur un `click` : setPointerCapture, qu'il
-    // faut pour que le pan survive à un doigt sorti du canevas, redirige aussi
-    // le click vers le canevas — le cartouche ne le recevait jamais.
-    if (carteTouchee && !aPane) {
-      app.selection = carteTouchee;
+    // La sélection se fait ici : setPointerCapture, qu'il faut pour que le pan
+    // survive à un doigt sorti du canevas, détourne le `click` vers le canevas.
+    if (mentionTouchee && !aPane) {
+      app.selection = mentionTouchee;
       dessinerArbre();
     }
-    carteTouchee = null;
+    mentionTouchee = null;
     relacher(e);
   });
-  zone.addEventListener('pointercancel', (e) => { carteTouchee = null; relacher(e); });
+  zone.addEventListener('pointercancel', (e) => { mentionTouchee = null; relacher(e); });
   zone.addEventListener('wheel', (e) => {
     e.preventDefault();
-    zoomerVers(plan.k * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, e.clientY);
+    zoomerVers(plan.k - e.deltaY * 0.0012, e.clientX, e.clientY);
   }, { passive: false });
 
-  $('#b-plus').onclick = () => { const c = centre(); zoomerVers(plan.k * 1.25, c.x, c.y); };
-  $('#b-moins').onclick = () => { const c = centre(); zoomerVers(plan.k / 1.25, c.x, c.y); };
-  $('#b-ajuster').onclick = ajusterCanevas;
+  $('#b-plus').onclick = () => { const c = centre(); zoomerVers(plan.k + 0.12, c.x, c.y); };
+  $('#b-moins').onclick = () => { const c = centre(); zoomerVers(plan.k - 0.12, c.x, c.y); };
+  $('#b-ajuster').onclick = viserSelection;
   $('#b-recentrer').onclick = cadrerSouche;
   $('#b-fermer-tiroir').onclick = () => { app.selection = null; dessinerArbre(); };
   $('#b-ouvrir-fiche').onclick = () => { if (app.selection) ouvrirFiche(app.selection, true); };
-  $('#b-recentrer-sur').onclick = () => {
+  // Pivoter, c'est prendre la personne pour souche et retourner le sens : c'est
+  // le geste qui remplace « recentrer ici », et il dit ce qu'on va voir.
+  $('#b-pivoter').onclick = () => {
     if (!app.selection) return;
     app.ancre = app.selection;
+    app.vue = app.vue === 'asc' ? 'desc' : 'asc';
+    for (const x of $$('#bascule-vue button')) x.classList.toggle('actif', x.dataset.vue === app.vue);
     dessinerArbre();
     cadrerSouche();
   };
   $('#bascule-vue').onclick = (e) => {
     const b = e.target.closest('button');
-    if (!b) return;
+    if (!b || b.dataset.vue === app.vue) return;
     app.vue = b.dataset.vue;
     for (const x of $$('#bascule-vue button')) x.classList.toggle('actif', x === b);
     dessinerArbre();
@@ -1113,17 +1317,31 @@ function brancherCanevas() {
 
 function rendreTiroir() {
   const t = $('#tiroir'), zone = $('#canevas');
-  if (!app.selection || !app.personnes.has(app.selection)) {
+  if (!app.selection || !app.personnes.has(app.selection) || !disposition || !disposition.pos[app.selection]) {
     t.hidden = true;
     zone.classList.remove('tiroir-ouvert');
     return;
   }
   const p = app.personnes.get(app.selection);
+  const ere = ERES[disposition.pos[app.selection].ere];
   t.hidden = false;
   zone.classList.add('tiroir-ouvert');
   $('#tiroir-nom').textContent = nomComplet(p);
   $('#tiroir-detail').textContent =
     [bornes(p), (p.naissance && p.naissance.lieu) || '', p.profession || ''].filter(Boolean).join(' · ') || '—';
+  $('#tiroir-epoque').textContent = ere.epoque;
+
+  // Le compte d'actes est le cœur du projet : une information sans source se dit,
+  // elle ne se cache pas derrière un blanc.
+  const n = actesDe(app.selection);
+  const encre = n ? 'var(--bleu)' : 'var(--encre-5)';
+  $('#tiroir-source').style.color = encre;
+  $('#tiroir-source').innerHTML =
+    '<span style="width: 7px; height: 7px; flex: 0 0 auto; background: ' + (n ? 'var(--bleu)' : 'transparent') +
+    '; border: 1px solid currentColor"></span>' +
+    (n ? ech(pluriel(n, 'acte rattaché', 'actes rattachés')) : 'Aucune source — information non attestée');
+
+  $('#b-pivoter').textContent = disposition.asc ? 'Voir sa descendance' : 'Voir son ascendance';
 }
 
 /* ══ Fiche d'une personne ═════════════════════════════════════════════ */

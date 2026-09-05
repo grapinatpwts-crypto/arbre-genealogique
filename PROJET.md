@@ -146,10 +146,11 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
 1. **Connexion** — Google uniquement.
 2. **Mes arbres** — liste par `array-contains`, rôle et compteurs. *Dessiné,
    pas construit : un seul arbre pour le moment.*
-3. **Vue de l'arbre** — canevas pan/zoom, bascule Ascendants / Descendants,
-   sélection d'un cartouche, recentrage sur n'importe qui. *Construite, mais
-   toujours le chantier design n° 1 — voir « Quatre générations ne tiennent pas
-   dans 390 px » au § 7.*
+3. **Lignée** — un parchemin qui défile, pan et zoom, bascule Ascendants /
+   Descendants, pivot sur n'importe qui. Pas de cartouche : chaque personne est
+   écrite dans le support, et la main qui écrit dit le siècle. Le design vient
+   de la maquette « Vue Arbre » ; **tout est spécifié dans `DESIGN-LIGNEE.md`,
+   à ouvrir avant d'y toucher.**
 4. **Fiche d'une personne** — onglets Fiche / Famille / Sources.
 5. **Édition** — formulaire ; les blocs Décès et Inhumation n'existent que si
    la personne est décédée.
@@ -257,12 +258,11 @@ laisserait un arbre à moitié faux, et il n'y a pas d'annulation.
   restait intouchable. Dans une feuille, le corps prend `flex: 0 1 auto` et ses
   enfants `flex: 0 0 auto`.
 - **Quatre générations ne tiennent pas dans 390 px.** Huit arrière-grands-parents
-  côte à côte font plus de 1 300 px : les faire tenir dans la largeur d'un
-  téléphone réduit les noms à quatre pixels. Cadrer sur la seule souche ne marche
-  pas non plus, ses deux parents étant chacun centrés sur leur propre sous-arbre
-  et donc hors champ. Le compromis retenu : le tracé va jusqu'à six générations,
-  mais l'ouverture cadre sur trois — souche, parents, grands-parents. Le reste se
-  rejoint en panant, en dézoomant, ou en recentrant sur quelqu'un de plus haut.
+  côte à côte dépassent 1 300 px : les faire tenir dans la largeur d'un téléphone
+  réduit les noms à quatre pixels. La vue Lignée l'assume — le parchemin déborde
+  et l'on déroule — mais elle resserre chaque rangée autour du centre, sans quoi
+  la largeur imposée par la rangée la plus peuplée écarte les deux parents de la
+  souche hors de l'écran. Voir `DESIGN-LIGNEE.md` § 11.
 
 ## 8. Prochaines étapes
 

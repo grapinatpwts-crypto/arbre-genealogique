@@ -8,6 +8,9 @@ firebase-debug.log
 # Sortie du canevas Claude Design : régénérée depuis design/*.dc.html,
 # 2 Mo d'éditeur embarqué qui n'ont rien à faire dans l'historique git.
 filiation.html
+# Runtime de l'éditeur, lui aussi généré (« do not edit » en tête de fichier) :
+# les design/*.dc.html le chargent, mais il se récupère avec le canevas.
+design/support.js
 
 # Photos des documents de famille : le dépôt est public, elles restent sur le
 # poste. Ce sont elles qui alimentent les premières saisies, pas le dépôt.

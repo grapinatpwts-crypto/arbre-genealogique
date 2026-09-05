@@ -12,7 +12,8 @@ Dernière mise à jour : **5 septembre 2026**.
 
 | | État |
 |---|---|
-| Maquettes des 8 écrans | faites — canevas Claude Design, sources dans `design/*.dc.html` |
+| Maquettes des écrans | faites — canevas Claude Design, sources dans `design/*.dc.html` |
+| Vue « Lignée » (parchemin) | maquette `design/VueArbre.dc.html`, spec `DESIGN-LIGNEE.md`, **portée dans l'app** |
 | Modèle de données | arrêté — `PROJET.md` § 3 |
 | `firestore.rules` | écrit et **déployé** sur `filiation-vasseur` |
 | `firestore.indexes.json`, `firebase.json` | écrits et déployés |
@@ -52,12 +53,12 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 
    Le collage ne vit pas dans ce dépôt : il est public, et ce sont des données
    familiales, dont une personne vivante.
-3. **Retravailler la vue de l'arbre.** Elle fonctionne — quatre générations
-   tracées, pan et zoom tactiles, cadrage sur trois générations à l'ouverture —
-   mais elle reste le chantier design n° 1. Sa limite est arithmétique : la
-   quatrième génération aligne huit cartouches, soit plus de 1 300 px, qui ne
-   tiennent pas lisiblement dans 390. Une disposition qui abrège les branches
-   lointaines ferait mieux.
+3. ~~Retravailler la vue de l'arbre~~ — fait le 5 septembre 2026. C'est
+   maintenant la vue **Lignée** : un parchemin qui défile, sans cartouche, où la
+   main qui écrit dit le siècle. Elle vient de la maquette `VueArbre.dc.html` et
+   de sa spécification `DESIGN-LIGNEE.md`, dont le § 11 liste les écarts que les
+   vraies données ont imposés. Reste à faire porter les **lacunes** par le modèle
+   (« registres détruits en 1793 ») : le rendu existe, l'information non.
 4. **Membres & partage** — l'écran est dessiné, pas construit ; il le sera quand
    il y aura quelqu'un à inviter.
 5. **Import GEDCOM** — pas commencé, c'est ce qui permettra de récupérer un arbre
