@@ -5,11 +5,8 @@ Point d'entrée pour une nouvelle session. Le détail technique est dans
 
 Dernière mise à jour : **5 septembre 2026**.
 
-**Reprendre par** : écrire `index.html` (point 2 ci-dessous). Les deux questions
-qui le précédaient sont tranchées — le propriétaire de l'arbre est
-`grapinat.pwts@gmail.com`, et le modèle porte désormais l'inhumation. Il reste à
-créer le document `arbres/{arbreId}`, la base Firestore étant vide : voir
-« L'arbre initial n'existe pas encore ».
+**Reprendre par** : ouvrir l'app et saisir le tableau 505A. `index.html` est
+écrit ; ce qui reste à faire tient dans « Ce qui reste, dans l'ordre ».
 
 ## Ce qui existe
 
@@ -20,9 +17,10 @@ créer le document `arbres/{arbreId}`, la base Firestore étant vide : voir
 | `firestore.rules` | écrit et **déployé** sur `filiation-vasseur` |
 | `firestore.indexes.json`, `firebase.json` | écrits et déployés |
 | `manifest.json`, `sw.js` | écrits |
-| `index.html` | **n'existe pas** — c'est le gros du travail restant |
+| `index.html` | **écrit** — connexion, arbre, fiche, édition, rattachement, sources |
 | Projet Firebase | **créé** — `filiation-vasseur`, Firestore `europe-west9` (Paris), Auth Google activée |
-| Icônes PWA | **à créer** (`icon-192.png`, `icon-512.png`, `icon-512-maskable.png`) |
+| Icônes PWA | **faites** — générées depuis le glyphe de l'écran de connexion |
+| GitHub Pages | **pas encore activé** |
 
 Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-c7724f28cf62
 
@@ -44,35 +42,36 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 
 ## Ce qui reste, dans l'ordre
 
-1. **Retravailler la vue de l'arbre.** C'est le chantier design n° 1 : la
-   maquette actuelle tient le principe (canevas de 720 px derrière un écran de
-   390, bascule Ascendants / Descendants, sélection d'un cartouche) mais elle
-   n'est pas au niveau. Tout le reste de l'app peut être construit sans
-   attendre — c'est un écran, pas une fondation.
-2. **Écrire `index.html`** : amorçage Firebase et `window.FB`, connexion Google,
-   chargement complet de l'arbre en mémoire, puis les écrans dans cet ordre —
-   vue de l'arbre, fiche, édition, rattachement, sources.
-3. **Saisir les premières personnes** à partir des documents de Guillaume — la
-   page 1 du tableau 505A est déjà transcrite et relue, elle n'attend que l'outil
-   (voir ci-dessous).
-4. Membres & partage — seulement quand il y aura quelqu'un à inviter.
-5. Import GEDCOM — pas commencé, c'est ce qui permettra de récupérer un arbre
+1. **Activer GitHub Pages** (`Settings ▸ Pages ▸ main / root`) et ajouter
+   `grapinatpwts-crypto.github.io` dans **Authentication ▸ Settings ▸ Domaines
+   autorisés**. Sans ce second point, la connexion Google marche en local et
+   échoue en ligne.
+2. **Saisir la page 1 du tableau 505A** : 15 personnes, 1 conjoint, 8 unions.
+   La transcription est faite et relue, elle attend d'être tapée dans l'app.
+3. **Retravailler la vue de l'arbre.** Elle fonctionne — quatre générations
+   tracées, pan et zoom tactiles, cadrage sur trois générations à l'ouverture —
+   mais elle reste le chantier design n° 1. Sa limite est arithmétique : la
+   quatrième génération aligne huit cartouches, soit plus de 1 300 px, qui ne
+   tiennent pas lisiblement dans 390. Une disposition qui abrège les branches
+   lointaines ferait mieux.
+4. **Membres & partage** — l'écran est dessiné, pas construit ; il le sera quand
+   il y aura quelqu'un à inviter.
+5. **Import GEDCOM** — pas commencé, c'est ce qui permettra de récupérer un arbre
    existant depuis Geneanet.
 
-*(Créer le projet Firebase et déployer règles et index : fait le 5 septembre 2026.)*
+*(Créer le projet Firebase et déployer règles et index : fait le 5 septembre
+2026. Écrire `index.html` et les icônes : fait le 5 septembre 2026.)*
 
-## L'arbre initial n'existe pas encore
+## L'arbre initial se crée tout seul
 
-La base est vide : aucun document `arbres/{arbreId}`. Or l'app s'ouvre
-directement sur un arbre dont l'identifiant est une constante en tête
-d'`index.html` — il faut donc que ce document existe, et qu'il porte le bon
-e-mail comme propriétaire. Deux façons, à trancher :
+C'est la deuxième option qui a été retenue : à la première connexion,
+`index.html` regarde si `arbres/principal` existe et le crée sinon, avec
+`membres: [email]` et `roles: { email: 'proprietaire' }` — exactement la forme
+que la règle `create` exige. Rien à faire à la main dans la console.
 
-- **Le créer à la main** dans la console Firestore. Les écritures console
-  passent en admin, elles ignorent les règles : on choisit l'ID librement.
-- **Le faire créer par `index.html`** à la première connexion, si l'arbre est
-  absent. La règle `create` l'autorise, à condition que `membres` vaille
-  exactement `[email]` et `roles` la seule clé `email → 'proprietaire'`.
+L'identifiant de l'arbre est la constante `ARBRE_ID` en tête d'`index.html`. Il
+vaut `principal` et non un patronyme : il n'y a qu'un arbre, et le jour où il y
+en aura plusieurs, celui-ci n'aura pas à être renommé.
 
 **Le propriétaire est `grapinat.pwts@gmail.com`** (tranché le 5 septembre
 2026) — le même compte que le CLI Firebase. Les autres membres seront ajoutés

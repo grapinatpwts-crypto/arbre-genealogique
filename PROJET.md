@@ -5,12 +5,13 @@ aux événements. PWA statique servie par GitHub Pages, qui parle directement à
 Firestore depuis le navigateur. Pas de serveur applicatif, pas de Cloud
 Function : toute la sécurité tient dans `firestore.rules`.
 
-État au 4 septembre 2026 : **les maquettes et l'architecture existent,
-`index.html` reste à écrire.** Voir `REPRISE.md`.
+État au 5 septembre 2026 : **`index.html` est écrit et fonctionne.** Reste à
+activer GitHub Pages et à saisir les premières personnes. Voir `REPRISE.md`.
 
-**Un seul arbre pour le moment** : l'app s'ouvrira directement sur la vue de
-l'arbre, son identifiant étant une constante en tête d'`index.html`. Le modèle
-ci-dessous reste multi-arbres — il ne coûte rien de plus et évite une migration.
+**Un seul arbre pour le moment** : l'app s'ouvre directement sur la vue de
+l'arbre, son identifiant étant la constante `ARBRE_ID` (`principal`) en tête
+d'`index.html`. Le modèle ci-dessous reste multi-arbres — il ne coûte rien de
+plus et évite une migration.
 
 ## 1. Ce que fait l'app
 
@@ -142,14 +143,17 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
 2. **Mes arbres** — liste par `array-contains`, rôle et compteurs. *Dessiné,
    pas construit : un seul arbre pour le moment.*
 3. **Vue de l'arbre** — canevas pan/zoom, bascule Ascendants / Descendants,
-   sélection d'un cartouche, recentrage sur n'importe qui. *La maquette tient le
-   principe mais doit être retravaillée : c'est le chantier design n° 1.*
+   sélection d'un cartouche, recentrage sur n'importe qui. *Construite, mais
+   toujours le chantier design n° 1 — voir « Quatre générations ne tiennent pas
+   dans 390 px » au § 6.*
 4. **Fiche d'une personne** — onglets Fiche / Famille / Sources.
 5. **Édition** — formulaire ; les blocs Décès et Inhumation n'existent que si
    la personne est décédée.
 6. **Rattacher** — on choisit d'abord le lien (père, mère, conjoint, enfant,
    fratrie), puis la personne : existante ou créée dans la foulée.
-7. **Membres & partage** — invitation par e-mail, changement de rôle.
+7. **Membres & partage** — invitation par e-mail, changement de rôle. *Dessiné,
+   pas construit : il n'y a encore personne à inviter, et l'onglet n'existe donc
+   pas dans la barre de navigation.*
 8. **Sources** — liste filtrable par type d'acte.
 
 ## 6. Pièges — à lire avant de reprendre
@@ -182,15 +186,35 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
   aucun bruit.
 - **`serverTimestamps: 'estimate'`** dès qu'on relit un document tout juste
   écrit, sinon le champ vaut `null` et le document semble ne pas exister.
+- **`setPointerCapture` détourne le `click`.** Le pan du canevas capture le
+  pointeur pour survivre à un doigt sorti de la zone ; du coup l'événement
+  `click` part sur le canevas et jamais sur le cartouche, qui n'était donc
+  jamais sélectionnable. La sélection se fait dans `pointerup`, à partir de la
+  cible mémorisée au `pointerdown`.
+- **L'attribut `hidden` perd contre une règle CSS.** `#tiroir { display: flex }`
+  l'emporte sur le `display: none` que le navigateur attache à `[hidden]` : le
+  tiroir de sélection restait ouvert en permanence, vide. Il faut une règle
+  `#tiroir[hidden] { display: none }` explicite.
+- **Quatre générations ne tiennent pas dans 390 px.** Huit arrière-grands-parents
+  côte à côte font plus de 1 300 px : les faire tenir dans la largeur d'un
+  téléphone réduit les noms à quatre pixels. Cadrer sur la seule souche ne marche
+  pas non plus, ses deux parents étant chacun centrés sur leur propre sous-arbre
+  et donc hors champ. Le compromis retenu : le tracé va jusqu'à six générations,
+  mais l'ouverture cadre sur trois — souche, parents, grands-parents. Le reste se
+  rejoint en panant, en dézoomant, ou en recentrant sur quelqu'un de plus haut.
 
 ## 7. Prochaines étapes
 
-1. Retravailler la vue de l'arbre — chantier design n° 1, indépendant du reste.
-2. ~~Créer le projet Firebase, activer Google, déployer règles et index~~ — fait
+1. ~~Créer le projet Firebase, activer Google, déployer règles et index~~ — fait
    le 5 septembre 2026 (`filiation-vasseur`, voir `REPRISE.md`).
-3. Écrire `index.html` : amorçage Firebase, connexion, chargement de l'arbre.
-4. Le canevas de l'arbre : calcul des générations, tracé SVG, pan/zoom tactile.
-5. Fiche, édition, rattachement, sources.
-6. Membres & partage — quand il y aura quelqu'un à inviter.
-7. Import GEDCOM (le format d'échange de toute la généalogie) — non commencé,
+2. ~~Écrire `index.html` : amorçage Firebase, connexion, chargement de l'arbre~~
+   — fait le 5 septembre 2026.
+3. ~~Le canevas de l'arbre : calcul des générations, tracé SVG, pan/zoom
+   tactile~~ — fait le 5 septembre 2026.
+4. ~~Fiche, édition, rattachement, sources~~ — fait le 5 septembre 2026.
+5. Activer GitHub Pages, et ajouter le domaine dans les domaines autorisés de
+   Firebase Authentication.
+6. Retravailler la vue de l'arbre — chantier design n° 1, indépendant du reste.
+7. Membres & partage — quand il y aura quelqu'un à inviter.
+8. Import GEDCOM (le format d'échange de toute la généalogie) — non commencé,
    c'est ce qui permettra de récupérer un arbre existant depuis Geneanet.

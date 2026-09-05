@@ -1,0 +1,1850 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#F3EDE1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Filiation</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root {
+  --creme: #F3EDE1;      /* fond général, papier */
+  --carte: #FBF7EF;      /* cartes et champs, papier plus clair */
+  --creme-fonce: #EFE9DD;
+  --barre: #E8E1D3;
+  --encre: #1F1A14;
+  --encre-2: #4A4137;
+  --encre-3: #6E6357;
+  --encre-4: #8A7D6D;
+  --encre-5: #9C8F7D;
+  --filet: #DCD2C0;
+  --filet-clair: #E4DBCB;
+  --filet-fonce: #C9BCA6;
+  --sanguine: #9A5233;
+  --sanguine-fonce: #7A3F26;
+  --bleu: #3D5A8C;       /* tout ce qui touche aux sources */
+  --bleu-fonce: #33507E;
+  --bleu-pale: #DFE5F0;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  margin: 0; background: var(--creme); color: var(--encre);
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
+  font-size: 15px; line-height: 1.4;
+  overscroll-behavior: none;
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; }
+
+/* Le décalage du bas sert les iPhone à encoche : sans lui, la barre d'onglets
+   passe sous le trait d'accueil et le dernier onglet devient intouchable. */
+.bas { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+.haut { padding-top: max(20px, env(safe-area-inset-top)); }
+
+.ecran { position: fixed; inset: 0; display: none; flex-direction: column; background: var(--creme); }
+.ecran.actif { display: flex; }
+
+/* ── Éléments communs ─────────────────────────────────────────────── */
+.surtitre { font-size: 9.5px; letter-spacing: .17em; text-transform: uppercase; color: var(--encre-4); font-weight: 600; }
+.bouton {
+  height: 50px; border: 0; border-radius: 4px; background: var(--sanguine); color: var(--carte);
+  font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; gap: 9px; padding: 0 16px;
+}
+.bouton:active { background: var(--sanguine-fonce); }
+.bouton[disabled] { background: var(--filet-fonce); color: var(--creme); cursor: default; }
+.bouton.creux { background: none; border: 1px solid var(--filet-fonce); color: var(--encre-2); }
+.bouton.creux:active { background: var(--creme-fonce); }
+.bouton.pointille { background: none; border: 1px dashed var(--filet-fonce); color: var(--sanguine); height: 48px; font-size: 14.5px; }
+.lien { color: var(--sanguine); font-weight: 600; cursor: pointer; background: none; border: 0; padding: 0; }
+
+.champ { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-width: 0; }
+.champ > span { font-size: 11.5px; color: var(--encre-3); }
+.champ input, .champ textarea, .champ select {
+  height: 46px; background: var(--carte); border: 1px solid var(--filet-fonce); border-radius: 4px;
+  padding: 0 13px; font-size: 15px; width: 100%; -webkit-appearance: none; appearance: none;
+}
+.champ textarea { height: auto; min-height: 84px; padding: 11px 13px; line-height: 1.45; resize: vertical; }
+.champ input:focus, .champ textarea:focus, .champ select:focus { outline: 2px solid var(--sanguine); outline-offset: -1px; }
+.champ input[type=date] { font-variant-numeric: tabular-nums; }
+
+.segments { display: flex; background: var(--barre); border: 1px solid var(--filet); border-radius: 4px; padding: 3px; gap: 3px; }
+.segments button {
+  flex: 1 1 0; height: 38px; border: 0; border-radius: 2px; cursor: pointer;
+  font-size: 13.5px; font-weight: 600; background: none; color: var(--encre-4);
+}
+.segments button.actif { background: var(--carte); color: var(--encre); box-shadow: 0 1px 2px rgba(31,26,20,.12); }
+
+.entete { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+.icone-bouton { width: 44px; height: 44px; margin: 0 -11px; border: 0; background: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex: 0 0 auto; }
+
+.liste-personne { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--filet-clair); cursor: pointer; background: none; border-left: 0; border-right: 0; border-top: 0; width: 100%; text-align: left; }
+.pastille { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--filet-fonce); display: flex; align-items: center; justify-content: center; font-family: 'EB Garamond', Georgia, serif; font-size: 14px; color: var(--encre-3); flex: 0 0 auto; }
+
+.defile { flex: 1 1 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.vide { padding: 40px 24px; text-align: center; color: var(--encre-4); font-size: 14px; line-height: 1.6; }
+
+/* ── Canevas de l'arbre ───────────────────────────────────────────── */
+#canevas.tiroir-ouvert .zoom { bottom: 158px; }
+#canevas {
+  flex: 1 1 0; position: relative; overflow: hidden; touch-action: none;
+  background-color: var(--creme-fonce);
+  background-image: radial-gradient(#D9CDB8 1px, transparent 1px);
+  background-size: 22px 22px;
+  border-top: 1px solid var(--filet-clair); border-bottom: 1px solid var(--filet-clair);
+}
+#plan { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+.cartouche {
+  position: absolute; background: var(--carte); border: 1px solid var(--filet-fonce); border-radius: 4px;
+  padding: 8px 11px; display: flex; flex-direction: column; justify-content: center; gap: 2px;
+  cursor: pointer; box-shadow: 0 1px 0 rgba(31,26,20,.05); overflow: hidden; text-align: left;
+}
+.cartouche.actif { border-color: var(--sanguine); box-shadow: 0 0 0 3px rgba(154,82,51,.18); }
+.cartouche.souche { border-color: var(--encre-2); }
+.cartouche b { font-family: 'EB Garamond', Georgia, serif; font-size: 14.5px; font-weight: 600; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cartouche i { font-style: normal; font-size: 11px; color: var(--encre-3); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.cartouche em { font-style: normal; font-size: 10px; color: var(--encre-5); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.zoom { position: absolute; right: 14px; bottom: 14px; transition: bottom .18s; display: flex; flex-direction: column; gap: 1px; background: var(--filet-fonce); border: 1px solid var(--filet-fonce); border-radius: 4px; overflow: hidden; }
+.zoom button { width: 44px; height: 44px; background: var(--carte); border: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+#tiroir[hidden] { display: none; }
+#tiroir { position: absolute; left: 0; right: 0; bottom: 0; background: var(--carte); border-top: 1px solid var(--filet-fonce); padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Fiche ────────────────────────────────────────────────────────── */
+.onglets-fiche { display: flex; gap: 22px; border-bottom: 1px solid var(--filet); }
+.onglets-fiche button { padding: 0 0 11px; cursor: pointer; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px; background: none; display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--encre-4); }
+.onglets-fiche button.actif { border-bottom-color: var(--sanguine); color: var(--encre); }
+.onglets-fiche small { font-size: 10.5px; font-weight: 600; color: var(--encre-5); font-variant-numeric: tabular-nums; }
+
+.ligne-civil { display: flex; align-items: baseline; gap: 14px; padding: 9px 0; border-bottom: 1px solid var(--filet-clair); }
+.ligne-civil > span:first-child { font-size: 12.5px; color: var(--encre-4); width: 108px; flex: 0 0 auto; }
+.ligne-civil > span:last-child { font-size: 14.5px; flex: 1 1 auto; }
+
+.evenement { background: var(--carte); border: 1px solid var(--filet-clair); border-radius: 4px; padding: 13px 14px; display: flex; flex-direction: column; gap: 8px; }
+.evenement > .titre { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.evenement > .titre b { font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-weight: 600; min-width: 0; }
+.evenement > .titre span { font-size: 12.5px; color: var(--encre-2); font-variant-numeric: tabular-nums; white-space: nowrap; flex: 0 0 auto; }
+.pied-source { display: flex; align-items: center; gap: 7px; border-top: 1px solid var(--filet-clair); padding-top: 8px; flex-wrap: wrap; }
+.pied-source .nom { font-size: 11.5px; color: var(--bleu); font-weight: 500; flex: 1 1 auto; min-width: 0; }
+.pied-source .sans { font-size: 11.5px; color: var(--encre-5); font-style: italic; flex: 1 1 auto; }
+
+.carte-source { background: var(--carte); border: 1px solid var(--filet-clair); border-left: 3px solid var(--bleu); border-radius: 4px; padding: 13px 14px; display: flex; flex-direction: column; gap: 9px; cursor: pointer; text-align: left; width: 100%; }
+.carte-source .haut2 { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.carte-source b { font-family: 'EB Garamond', Georgia, serif; font-size: 18px; font-weight: 600; line-height: 1.2; flex: 1 1 auto; }
+.etiquette { font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--bleu-fonce); background: var(--bleu-pale); border-radius: 2px; padding: 5px 7px; white-space: nowrap; flex: 0 0 auto; }
+.carte-source .cote { font-size: 12.5px; color: var(--encre-3); line-height: 1.45; }
+
+.filtres { display: flex; gap: 8px; padding: 0 20px 12px; overflow-x: auto; }
+.filtres button { height: 34px; padding: 0 13px; border: 1px solid var(--filet-fonce); background: none; color: var(--encre-2); border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; flex: 0 0 auto; }
+.filtres button.actif { background: var(--encre-2); border-color: var(--encre-2); color: var(--creme); }
+
+/* ── Barre d'onglets ──────────────────────────────────────────────── */
+.onglets { display: flex; padding: 8px 6px 0; background: var(--creme); border-top: 1px solid var(--filet-clair); }
+.onglets button { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; cursor: pointer; background: none; border: 0; color: var(--encre-5); }
+.onglets button.actif { color: var(--sanguine); }
+.onglets span { font-size: 10px; font-weight: 600; letter-spacing: .03em; }
+
+/* ── Grille de liens (écran Rattacher) ────────────────────────────── */
+.grille-liens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.grille-liens button { height: 78px; background: var(--carte); border: 1px solid var(--filet-clair); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-size: 13.5px; font-weight: 600; color: var(--encre-2); }
+.grille-liens button.actif, .large-lien.actif { border-color: var(--sanguine); color: var(--sanguine); box-shadow: 0 0 0 2px rgba(154,82,51,.15); }
+.large-lien { height: 56px; background: var(--carte); border: 1px solid var(--filet-clair); border-radius: 4px; display: flex; align-items: center; gap: 12px; padding: 0 16px; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--encre-2); width: 100%; text-align: left; }
+
+/* ── Bascule ──────────────────────────────────────────────────────── */
+.bascule { display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--carte); border: 1px solid var(--filet-clair); border-radius: 4px; cursor: pointer; width: 100%; text-align: left; }
+.bascule .rail { width: 48px; height: 28px; border-radius: 999px; background: var(--barre); border: 1px solid var(--filet); padding: 2px; display: flex; justify-content: flex-start; flex: 0 0 auto; transition: background .15s; }
+.bascule.on .rail { background: var(--sanguine); border-color: var(--sanguine); justify-content: flex-end; }
+.bascule .rail i { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--carte); box-shadow: 0 1px 2px rgba(31,26,20,.25); }
+
+/* ── Message d'erreur ─────────────────────────────────────────────── */
+#alerte { position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); background: var(--encre); color: var(--creme); border-radius: 4px; padding: 13px 15px; font-size: 13.5px; line-height: 1.45; z-index: 99; display: none; box-shadow: 0 6px 20px rgba(31,26,20,.28); }
+#alerte.visible { display: block; }
+
+/* ── Feuille modale (choix d'une source) ──────────────────────────── */
+#feuille { position: fixed; inset: 0; z-index: 90; display: none; flex-direction: column; justify-content: flex-end; background: rgba(31,26,20,.35); }
+#feuille.actif { display: flex; }
+#feuille > div { background: var(--creme); border-radius: 8px 8px 0 0; max-height: 84%; display: flex; flex-direction: column; padding: 18px 20px max(18px, env(safe-area-inset-bottom)); gap: 14px; }
+</style>
+</head>
+<body>
+
+<!-- ══ Connexion ═══════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-connexion" style="justify-content: space-between; padding: 96px 32px 40px; overflow: hidden">
+  <div style="position: absolute; top: -60px; right: -110px; opacity: .09; pointer-events: none">
+    <svg width="360" height="360" viewBox="0 0 360 360" fill="none" stroke="#1F1A14" stroke-width="1.2">
+      <circle cx="180" cy="300" r="26"/><circle cx="110" cy="190" r="26"/><circle cx="250" cy="190" r="26"/>
+      <circle cx="60" cy="80" r="26"/><circle cx="160" cy="80" r="26"/><circle cx="200" cy="80" r="26"/><circle cx="300" cy="80" r="26"/>
+      <path d="M180 274 L180 240 M110 240 L110 216 M250 240 L250 216 M110 240 L250 240 M60 106 L60 130 M160 106 L160 130 M60 130 L160 130 M110 130 L110 164 M200 106 L200 130 M300 106 L300 130 M200 130 L300 130 M250 130 L250 164"/>
+    </svg>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 22px">
+    <svg width="34" height="42" viewBox="0 0 34 42" fill="none" stroke="#9A5233" stroke-width="1.6" stroke-linecap="square">
+      <path d="M17 42 L17 26 M5 26 L29 26 M5 26 L5 14 M29 26 L29 14"/>
+      <circle cx="17" cy="38" r="3.4" fill="#9A5233" stroke="none"/><circle cx="5" cy="10" r="3.4"/><circle cx="29" cy="10" r="3.4"/>
+    </svg>
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h1 style="font-size: 58px; line-height: .94; letter-spacing: -.01em; margin: 0">Filiation</h1>
+      <p style="font-size: 15px; line-height: 1.55; color: var(--encre-3); margin: 0; max-width: 26ch">L'arbre de votre famille, tenu comme un registre&nbsp;: chaque date porte la source qui l'atteste.</p>
+    </div>
+  </div>
+  <div style="display: flex; flex-direction: column; gap: 20px">
+    <button class="bouton creux" id="b-google" style="height: 54px; background: var(--carte); font-size: 15.5px; color: var(--encre); gap: 12px">
+      <svg width="19" height="19" viewBox="0 0 48 48" aria-hidden="true">
+        <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.7-2.1 5-4.4 6.6v5.5h7.1c4.1-3.8 6.6-9.5 6.6-16.3z"/>
+        <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.2 15.5 46 24 46z"/>
+        <path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.7-.7-4.3s.3-2.9.7-4.3v-5.7H4.5C2.9 17.1 2 20.4 2 24s.9 6.9 2.5 10z"/>
+        <path fill="#EA4335" d="M24 10.8c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.2 29.9 2 24 2 15.5 2 8.1 6.8 4.5 13.9l7.3 5.7c1.7-5.2 6.5-8.8 12.2-8.8z"/>
+      </svg>
+      Continuer avec Google
+    </button>
+    <p style="font-size: 12.5px; line-height: 1.5; color: var(--encre-4); margin: 0; text-align: center">Vos données restent dans votre base. Un arbre n'est visible que par les personnes que vous invitez.</p>
+  </div>
+</section>
+
+<!-- ══ Chargement ══════════════════════════════════════════════════ -->
+<section class="ecran actif" id="ec-chargement" style="align-items: center; justify-content: center; gap: 16px; padding: 32px">
+  <span class="serif" style="font-size: 26px">Filiation</span>
+  <span id="mot-chargement" style="font-size: 13.5px; color: var(--encre-4); text-align: center; line-height: 1.6">Chargement…</span>
+</section>
+
+<!-- ══ Arbre ═══════════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-arbre">
+  <div class="haut" style="padding-left: 18px; padding-right: 18px; display: flex; flex-direction: column; gap: 14px">
+    <div class="entete">
+      <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0">
+        <span class="surtitre">Arbre</span>
+        <span class="serif" id="nom-arbre" style="font-size: 20px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis"></span>
+      </div>
+      <button class="icone-bouton" id="b-deconnexion" title="Se déconnecter">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#4A4137"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>
+      </button>
+    </div>
+    <div class="segments" id="bascule-vue">
+      <button data-vue="asc" class="actif">Ascendants</button>
+      <button data-vue="desc">Descendants</button>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--encre-3); min-height: 30px">
+      <span class="surtitre" id="mot-ancre">Ascendance de</span>
+      <span class="serif" id="nom-ancre" style="font-size: 15px; color: var(--encre); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap"></span>
+      <button class="lien" id="b-recentrer" style="border: 1px solid var(--filet-fonce); border-radius: 2px; padding: 5px 9px; font-size: 11px; color: var(--encre-2)">Recentrer</button>
+    </div>
+  </div>
+
+  <div id="canevas">
+    <div id="plan">
+      <svg id="traits" style="position: absolute; left: 0; top: 0; overflow: visible" fill="none"></svg>
+      <div id="cartouches"></div>
+    </div>
+    <div class="zoom">
+      <button id="b-plus" aria-label="Agrandir"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="b-moins" aria-label="Réduire"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M5 12h14"/></svg></button>
+      <button id="b-ajuster" aria-label="Tout voir"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.7"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg></button>
+    </div>
+    <div id="tiroir" hidden>
+      <div style="display: flex; align-items: flex-start; gap: 12px">
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 3px; min-width: 0">
+          <span class="serif" id="tiroir-nom" style="font-size: 24px; line-height: 1.1"></span>
+          <span class="num" id="tiroir-detail" style="font-size: 12.5px; color: var(--encre-3)"></span>
+        </div>
+        <button class="icone-bouton" id="b-fermer-tiroir" style="width: 32px; height: 32px; margin: 0">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A7D6D" stroke-width="1.8" stroke-linecap="square"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button class="bouton" id="b-ouvrir-fiche" style="flex: 1 1 0; height: 46px; font-size: 14.5px">Ouvrir la fiche</button>
+        <button class="bouton creux" id="b-recentrer-sur" style="flex: 1 1 0; height: 46px; font-size: 14.5px">Recentrer ici</button>
+      </div>
+    </div>
+  </div>
+  <nav class="onglets bas" data-onglets></nav>
+</section>
+
+<!-- ══ Personnes ═══════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-personnes">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+      <h1 style="font-size: 34px; line-height: 1; margin: 0">Personnes</h1>
+      <span id="compte-personnes" style="font-size: 12.5px; color: var(--encre-4); padding-bottom: 3px"></span>
+    </div>
+    <div class="champ">
+      <input id="rech-personnes" type="search" placeholder="Chercher un nom, un prénom" autocomplete="off">
+    </div>
+  </div>
+  <div class="defile" style="padding: 8px 20px 0" id="liste-personnes"></div>
+  <div style="padding: 12px 20px 10px">
+    <button class="bouton pointille" id="b-nouvelle-personne" style="width: 100%">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg>
+      Ajouter une personne
+    </button>
+  </div>
+  <nav class="onglets bas" data-onglets></nav>
+</section>
+
+<!-- ══ Sources ═════════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-sources">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; padding-bottom: 14px; display: flex; flex-direction: column; gap: 6px">
+    <span class="surtitre" id="surtitre-sources"></span>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+      <h1 style="font-size: 34px; line-height: 1; margin: 0">Sources</h1>
+      <span id="compte-sources" style="font-size: 12.5px; color: var(--encre-4); padding-bottom: 3px"></span>
+    </div>
+  </div>
+  <div class="filtres" id="filtres-sources"></div>
+  <div class="defile" style="padding: 4px 20px 0; display: flex; flex-direction: column; gap: 10px" id="liste-sources"></div>
+  <div style="padding: 12px 20px 10px">
+    <button class="bouton pointille" id="b-nouvelle-source" style="width: 100%">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg>
+      Ajouter une source
+    </button>
+  </div>
+  <nav class="onglets bas" data-onglets></nav>
+</section>
+
+<!-- ══ Fiche ═══════════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-fiche">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; display: flex; flex-direction: column; gap: 16px">
+    <div class="entete">
+      <button class="icone-bouton" data-retour><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span style="flex: 1 1 auto"></span>
+      <button class="icone-bouton" id="b-voir-arbre" title="Voir dans l'arbre">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.6" stroke-linecap="square"><path d="M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z"/></svg>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px">
+      <h1 id="fiche-nom" style="font-size: 34px; line-height: 1.05; margin: 0"></h1>
+      <div class="num" id="fiche-dates" style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--encre-3); flex-wrap: wrap"></div>
+    </div>
+    <div class="onglets-fiche" id="onglets-fiche">
+      <button data-vol="civil" class="actif">Fiche</button>
+      <button data-vol="famille">Famille <small></small></button>
+      <button data-vol="sources">Sources <small></small></button>
+    </div>
+  </div>
+  <div class="defile" style="padding: 18px 20px 0; display: flex; flex-direction: column; gap: 22px" id="corps-fiche"></div>
+  <div class="bas" style="display: flex; gap: 10px; padding: 14px 20px 0; border-top: 1px solid var(--filet-clair)">
+    <button class="bouton" id="b-modifier" style="flex: 1 1 0">Modifier</button>
+    <button class="bouton creux" id="b-rattacher" style="flex: 1 1 0">Rattacher</button>
+  </div>
+</section>
+
+<!-- ══ Édition ═════════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-edition">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; padding-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px">
+    <button class="lien" data-retour style="font-weight: 500; color: var(--encre-3); font-size: 14.5px">Annuler</button>
+    <span class="serif" id="titre-edition" style="font-size: 20px">Modifier la fiche</span>
+    <span style="width: 48px"></span>
+  </div>
+  <div class="defile" style="padding: 6px 20px 0; display: flex; flex-direction: column; gap: 20px" id="corps-edition"></div>
+  <div class="bas" style="padding: 12px 20px 0; border-top: 1px solid var(--filet-clair); display: flex; gap: 10px">
+    <button class="bouton creux" id="b-supprimer" style="width: 50px; flex: 0 0 auto; padding: 0" title="Supprimer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.7" stroke-linecap="square"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg>
+    </button>
+    <button class="bouton" id="b-enregistrer" style="flex: 1 1 0">Enregistrer</button>
+  </div>
+</section>
+
+<!-- ══ Rattacher ═══════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-rattacher">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; display: flex; flex-direction: column; gap: 14px">
+    <div class="entete"><button class="icone-bouton" data-retour><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M15 5l-7 7 7 7"/></svg></button></div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="font-size: 30px; line-height: 1.05; margin: 0">Rattacher une personne</h1>
+      <p style="font-size: 13.5px; color: var(--encre-3); margin: 0" id="rat-a-qui"></p>
+    </div>
+  </div>
+  <div class="defile" style="padding: 22px 20px 0; display: flex; flex-direction: column; gap: 22px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span class="surtitre">Lien de parenté</span>
+      <div class="grille-liens" id="grille-liens"></div>
+      <button class="large-lien" data-lien="fratrie">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M7 12a3 3 0 100-6 3 3 0 000 6zM17 12a3 3 0 100-6 3 3 0 000 6zM2 20c0-2.8 2.2-5 5-5s5 2.2 5 5M12 20c0-2.8 2.2-5 5-5s5 2.2 5 5"/></svg>
+        <span style="flex: 1 1 auto">Frère ou sœur</span>
+      </button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px" id="bloc-cible" hidden>
+      <span class="surtitre" id="titre-cible"></span>
+      <div class="champ"><input id="rech-rattacher" type="search" placeholder="Chercher" autocomplete="off"></div>
+      <div id="candidats"></div>
+      <button class="liste-personne" id="b-creer-pour-lien" style="border-bottom: 0">
+        <div class="pastille" style="border-style: dashed; border-color: var(--sanguine)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.9" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <span style="font-size: 14.5px; font-weight: 600; color: var(--sanguine); flex: 1 1 auto">Créer une nouvelle personne</span>
+      </button>
+    </div>
+  </div>
+  <div class="bas" style="padding: 12px 20px 0; border-top: 1px solid var(--filet-clair)">
+    <button class="bouton" id="b-valider-lien" style="width: 100%" disabled>Choisir un lien</button>
+  </div>
+</section>
+
+<!-- ══ Feuille modale ══════════════════════════════════════════════ -->
+<div id="feuille"><div>
+  <div style="display: flex; align-items: center; gap: 12px">
+    <span class="serif" id="feuille-titre" style="font-size: 22px; flex: 1 1 auto"></span>
+    <button class="icone-bouton" id="b-fermer-feuille" style="width: 32px; height: 32px; margin: 0">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8A7D6D" stroke-width="1.8" stroke-linecap="square"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="defile" id="feuille-corps" style="display: flex; flex-direction: column; gap: 10px"></div>
+</div></div>
+
+<div id="alerte" role="status"></div>
+
+<script type="module">
+/* Amorçage Firebase. Ce module s'exécute APRÈS le script classique qui suit —
+   un <script type="module"> est différé par nature. C'est pour ça que la logique
+   de l'app attend l'événement « fb:pret » au lieu de lire window.FB tout de suite :
+   au moment où elle s'évalue, window.FB n'existe pas encore. */
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js';
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+  getRedirectResult, onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js';
+import {
+  initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDsu6R8zTpcE83dA4JitWApEj5dNUVO3sY",
+  authDomain: "filiation-vasseur.firebaseapp.com",
+  projectId: "filiation-vasseur",
+  storageBucket: "filiation-vasseur.firebasestorage.app",
+  messagingSenderId: "677547453919",
+  appId: "1:677547453919:web:f4b11142e2c179a709286a"
+};
+
+const app = initializeApp(firebaseConfig);
+
+// persistentLocalCache donne le hors-ligne sans une ligne de code de plus : le
+// SDK sert son cache quand le réseau manque. multipleTabManager évite qu'un
+// second onglet fasse échouer la persistance du premier.
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+
+const auth = getAuth(app);
+
+window.FB = {
+  db, auth,
+  GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult,
+  onAuthStateChanged, signOut,
+  collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, writeBatch, serverTimestamp
+};
+window.dispatchEvent(new Event('fb:pret'));
+</script>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════
+   Filiation — logique de l'app.
+
+   Un seul arbre pour le moment (décidé le 4 septembre 2026) : son identifiant
+   est la constante ci-dessous. Le modèle Firestore reste multi-arbres, l'app
+   ne l'est pas encore.
+   ══════════════════════════════════════════════════════════════════════ */
+
+const ARBRE_ID = 'principal';
+const NOM_ARBRE_PAR_DEFAUT = 'Famille Boulland — Petit';
+
+/* L'arbre entier tient en mémoire : toutes les personnes, toutes les unions,
+   toutes les sources sont chargées d'un coup, et ascendance, descendance,
+   fratries et compteurs se calculent ici. Limite assumée vers 2 000 personnes. */
+const app = {
+  email: null,          // e-mail du compte connecté, en minuscules
+  role: null,           // 'proprietaire' | 'editeur' | 'lecteur'
+  arbre: null,          // document arbres/{ARBRE_ID}
+  personnes: new Map(), // id → personne
+  unions: new Map(),    // id → union
+  sources: new Map(),   // id → source
+  enfantsDe: new Map(), // id d'un parent → [ids des enfants], reconstruit au chargement
+  ancre: null,          // personne au centre du canevas
+  vue: 'asc',           // 'asc' | 'desc'
+  selection: null,      // personne touchée dans le canevas
+  fiche: null,          // personne affichée en fiche
+  volet: 'civil',       // onglet de la fiche
+  filtreSource: 'tous',
+  pile: []              // écrans empilés, pour le bouton retour
+};
+
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+/* ── Petites fonctions de texte ──────────────────────────────────────── */
+
+const MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+
+/* Une date d'état civil est une chaîne AAAA-MM-JJ, jamais un instant : elle se
+   découpe, elle ne se passe pas à `new Date` (qui la lirait à minuit UTC et
+   reculerait d'un jour à l'ouest de Greenwich). */
+function dateLongue(iso) {
+  if (!iso) return '';
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
+  if (!m) return iso;
+  return Number(m[3]) + ' ' + MOIS[Number(m[2]) - 1] + ' ' + m[1];
+}
+function annee(iso) {
+  if (!iso) return '';
+  const m = /^(\d{4})/.exec(iso);
+  return m ? m[1] : '';
+}
+function evenementTexte(ev) {
+  if (!ev) return '';
+  const d = ev.date ? dateLongue(ev.date) : (ev.date_texte || '');
+  if (d && ev.lieu) return d + ', ' + ev.lieu;
+  return d || ev.lieu || '';
+}
+/* L'année affichée peut venir d'une date exacte ou de `date_texte` (« vers
+   1899 ») : on n'invente rien, on extrait juste les quatre chiffres qui y sont. */
+function anneeApprochee(ev) {
+  if (!ev) return '';
+  if (ev.date) return annee(ev.date);
+  const m = ev.date_texte ? /(\d{4})/.exec(ev.date_texte) : null;
+  return m ? m[1] : '';
+}
+function nomComplet(p) {
+  if (!p) return '';
+  return ((p.prenoms || '') + ' ' + (p.nom || '')).trim() || 'Sans nom';
+}
+function nomCourt(p) {
+  if (!p) return '';
+  const premier = (p.prenoms || '').trim().split(/[\s,]+/)[0] || '';
+  return (premier + ' ' + (p.nom || '')).trim() || 'Sans nom';
+}
+function initiales(p) {
+  const a = (p.prenoms || '').trim()[0] || '';
+  const b = (p.nom || '').trim()[0] || '';
+  return (a + b).toUpperCase() || '?';
+}
+function estDecedee(p) {
+  return !!(p.deces && (p.deces.date || p.deces.date_texte || p.deces.lieu)) ||
+         !!(p.inhumation && (p.inhumation.date || p.inhumation.date_texte || p.inhumation.lieu));
+}
+function bornes(p) {
+  const n = anneeApprochee(p.naissance), d = anneeApprochee(p.deces);
+  if (n && d) return n + ' – ' + d;
+  if (d) return '† ' + d;
+  if (n) return n;
+  return estDecedee(p) ? '†' : '';
+}
+/* Âge au décès : une soustraction d'années, corrigée si l'anniversaire n'était
+   pas passé. Aucun calcul sur des instants — voir PROJET.md § 6. */
+function ageAuDeces(p) {
+  const n = p.naissance && p.naissance.date, d = p.deces && p.deces.date;
+  if (!n || !d) return '';
+  let a = Number(d.slice(0, 4)) - Number(n.slice(0, 4));
+  if (d.slice(5) < n.slice(5)) a -= 1;
+  return a >= 0 && a < 130 ? a + ' ans' : '';
+}
+function ech(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function pluriel(n, mot, motPluriel) {
+  return n + ' ' + (n > 1 ? (motPluriel || mot + 's') : mot);
+}
+/* Comparaison sans accents ni casse, pour la recherche. */
+function pliage(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+let minuteurAlerte = null;
+function alerte(texte) {
+  const el = $('#alerte');
+  el.textContent = texte;
+  el.classList.add('visible');
+  clearTimeout(minuteurAlerte);
+  minuteurAlerte = setTimeout(() => el.classList.remove('visible'), 6000);
+}
+
+/* Un refus de règle Firestore ne fait aucun bruit : sans ce filet, l'écran
+   resterait sur « Chargement… » sans rien dire. Toute lecture et toute écriture
+   passent par ici. */
+function expliquer(e) {
+  const code = (e && e.code) || '';
+  if (code === 'permission-denied') {
+    return "Firestore a refusé l'accès. Le compte connecté (" + (app.email || '?') +
+           ") n'est peut-être pas membre de cet arbre.";
+  }
+  if (code === 'unavailable') return 'Pas de réseau. Les données affichées viennent du cache.';
+  if (code === 'failed-precondition') return 'Le cache hors ligne est indisponible dans cet onglet.';
+  return (e && e.message) || String(e);
+}
+
+/* ── Accès Firestore ─────────────────────────────────────────────────── */
+
+const refArbre = () => FB.doc(FB.db, 'arbres', ARBRE_ID);
+const refCollection = (nom) => FB.collection(FB.db, 'arbres', ARBRE_ID, nom);
+const refDoc = (nom, id) => FB.doc(FB.db, 'arbres', ARBRE_ID, nom, id);
+
+/* `serverTimestamps: 'estimate'` : sans lui, un document relu juste après son
+   écriture rend `null` sur cree_le/maj_le et paraît vide. */
+const lire = (snap) => Object.assign({ id: snap.id }, snap.data({ serverTimestamps: 'estimate' }));
+
+function peutEcrire() { return app.role === 'proprietaire' || app.role === 'editeur'; }
+
+function tampon(creation) {
+  const t = { maj_par: app.email, maj_le: FB.serverTimestamp() };
+  if (creation) { t.cree_par = app.email; t.cree_le = FB.serverTimestamp(); }
+  return t;
+}
+
+async function chargerTout() {
+  const snapArbre = await FB.getDoc(refArbre());
+  if (!snapArbre.exists()) {
+    await creerArbre();
+    return chargerTout();
+  }
+  app.arbre = lire(snapArbre);
+  app.role = (app.arbre.roles || {})[app.email] || null;
+  if (!app.role) throw Object.assign(new Error('non membre'), { code: 'permission-denied' });
+
+  const [sp, su, ss] = await Promise.all([
+    FB.getDocs(refCollection('personnes')),
+    FB.getDocs(refCollection('unions')),
+    FB.getDocs(refCollection('sources'))
+  ]);
+  app.personnes = new Map(sp.docs.map(d => [d.id, lire(d)]));
+  app.unions = new Map(su.docs.map(d => [d.id, lire(d)]));
+  app.sources = new Map(ss.docs.map(d => [d.id, lire(d)]));
+  indexer();
+}
+
+/* L'arbre n'existe pas au premier lancement. La règle `create` l'autorise à
+   condition que `membres` vaille exactement [email] et `roles` la seule clé
+   email → 'proprietaire' : c'est ce qui empêche de s'inventer des co-membres. */
+async function creerArbre() {
+  await FB.setDoc(refArbre(), Object.assign({
+    nom: NOM_ARBRE_PAR_DEFAUT,
+    membres: [app.email],
+    roles: { [app.email]: 'proprietaire' },
+    invites: [],
+    resume: { personnes: 0, sources: 0 }
+  }, tampon(true)));
+}
+
+/* La descendance n'est stockée nulle part : c'est l'enfant qui porte le lien
+   vers ses parents. L'index inverse se refait à chaque changement — il coûte
+   un parcours, et il ne peut donc pas dériver comme le ferait un compteur. */
+function indexer() {
+  app.enfantsDe = new Map();
+  for (const p of app.personnes.values()) {
+    for (const idParent of p.parents || []) {
+      if (!app.enfantsDe.has(idParent)) app.enfantsDe.set(idParent, []);
+      app.enfantsDe.get(idParent).push(p.id);
+    }
+  }
+  const parAge = (a, b) => {
+    const x = anneeApprochee(app.personnes.get(a).naissance) || '9999';
+    const y = anneeApprochee(app.personnes.get(b).naissance) || '9999';
+    return x < y ? -1 : x > y ? 1 : 0;
+  };
+  for (const liste of app.enfantsDe.values()) liste.sort(parAge);
+}
+
+function parentsDe(id) {
+  const p = app.personnes.get(id);
+  return (p && p.parents || []).filter(x => app.personnes.has(x));
+}
+function enfantsDe(id) { return app.enfantsDe.get(id) || []; }
+function unionsDe(id) {
+  return Array.from(app.unions.values()).filter(u => (u.conjoints || []).includes(id));
+}
+function conjointsDe(id) {
+  const out = [];
+  for (const u of unionsDe(id)) {
+    for (const c of u.conjoints || []) if (c !== id && app.personnes.has(c)) out.push({ id: c, union: u });
+  }
+  return out;
+}
+function fratrieDe(id) {
+  const vus = new Set();
+  for (const idParent of parentsDe(id)) for (const e of enfantsDe(idParent)) if (e !== id) vus.add(e);
+  return Array.from(vus);
+}
+
+/* Toutes les personnes qui descendent de `id`, `id` compris. Sert à refuser un
+   rattachement qui ferait de quelqu'un son propre aïeul : les règles Firestore
+   ne savent pas parcourir les autres documents, la vérification est ici. */
+function descendanceDe(id) {
+  const vus = new Set([id]);
+  const pile = [id];
+  while (pile.length) {
+    for (const e of enfantsDe(pile.pop())) if (!vus.has(e)) { vus.add(e); pile.push(e); }
+  }
+  return vus;
+}
+
+/* Les événements d'une personne, dans l'ordre d'une vie. Les unions viennent
+   s'y intercaler : c'est l'union qui porte le mariage, pas la personne. */
+function evenementsDe(id) {
+  const p = app.personnes.get(id);
+  if (!p) return [];
+  const out = [];
+  if (p.naissance) out.push({ cle: 'naissance', titre: 'Naissance', ev: p.naissance, ref: { genre: 'personne', id, champ: 'naissance' } });
+  for (const u of unionsDe(id)) {
+    if (u.mariage) {
+      const autre = (u.conjoints || []).find(c => c !== id);
+      const nom = app.personnes.has(autre) ? nomComplet(app.personnes.get(autre)) : null;
+      out.push({ cle: 'mariage', titre: nom ? 'Mariage avec ' + nom : 'Mariage', ev: u.mariage, ref: { genre: 'union', id: u.id, champ: 'mariage' } });
+    }
+  }
+  if (p.deces) out.push({ cle: 'deces', titre: 'Décès', ev: p.deces, ref: { genre: 'personne', id, champ: 'deces' } });
+  if (p.inhumation) out.push({ cle: 'inhumation', titre: 'Inhumation', ev: p.inhumation, ref: { genre: 'personne', id, champ: 'inhumation' } });
+  return out.filter(e => evenementTexte(e.ev) || (e.ev.sources || []).length);
+}
+
+/* Combien d'événements citent une source. Ce compte n'est stocké nulle part :
+   il se recalcule, il ne peut donc pas se désynchroniser. */
+function usagesDeSource(idSource) {
+  const out = [];
+  for (const p of app.personnes.values()) {
+    for (const champ of ['naissance', 'deces', 'inhumation']) {
+      if (p[champ] && (p[champ].sources || []).includes(idSource)) {
+        out.push({ genre: 'personne', id: p.id, champ, quoi: nomComplet(p) });
+      }
+    }
+  }
+  for (const u of app.unions.values()) {
+    if (u.mariage && (u.mariage.sources || []).includes(idSource)) {
+      const noms = (u.conjoints || []).map(c => app.personnes.has(c) ? nomComplet(app.personnes.get(c)) : '?').join(' & ');
+      out.push({ genre: 'union', id: u.id, champ: 'mariage', quoi: noms });
+    }
+  }
+  return out;
+}
+
+/* Les compteurs d'en-tête. Les règles autorisent l'éditeur à écrire `resume` ;
+   s'ils échouent, ce n'est pas grave, ils se recalculent au chargement suivant. */
+async function majResume() {
+  const resume = { personnes: app.personnes.size, sources: app.sources.size };
+  app.arbre.resume = resume;
+  try {
+    await FB.updateDoc(refArbre(), { resume, maj_par: app.email, maj_le: FB.serverTimestamp() });
+  } catch (e) { /* compteur d'affichage : un échec ici ne doit rien bloquer */ }
+}
+
+/* ── Navigation entre écrans ─────────────────────────────────────────── */
+
+const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'fiche', 'edition', 'rattacher'];
+const ONGLETS = [
+  { id: 'arbre', nom: 'Arbre', icone: 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z' },
+  { id: 'personnes', nom: 'Personnes', icone: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4' },
+  { id: 'sources', nom: 'Sources', icone: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4' }
+];
+let ecranActuel = 'chargement';
+
+function montrer(nom, empiler) {
+  if (empiler) app.pile.push(ecranActuel);
+  ecranActuel = nom;
+  for (const e of ECRANS) $('#ec-' + e).classList.toggle('actif', e === nom);
+  for (const barre of $$('[data-onglets]')) {
+    for (const b of $$('button', barre)) b.classList.toggle('actif', b.dataset.onglet === nom);
+  }
+  if (nom === 'arbre') cadrerSouche();
+}
+function retour() {
+  const precedent = app.pile.pop() || 'arbre';
+  montrer(precedent, false);
+}
+
+function construireOnglets() {
+  for (const barre of $$('[data-onglets]')) {
+    barre.innerHTML = ONGLETS.map(o =>
+      '<button data-onglet="' + o.id + '">' +
+      '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="' + o.icone + '"/></svg>' +
+      '<span>' + o.nom + '</span></button>').join('');
+    barre.onclick = (e) => {
+      const b = e.target.closest('button');
+      if (!b) return;
+      app.pile = [];
+      montrer(b.dataset.onglet, false);
+      if (b.dataset.onglet === 'personnes') rendrePersonnes();
+      if (b.dataset.onglet === 'sources') rendreSources();
+    };
+  }
+}
+
+/* ══ Canevas de l'arbre ═══════════════════════════════════════════════
+   Le tracé est calculé ici puis posé en coordonnées absolues dans #plan, que
+   le pan/zoom déplace d'un seul `transform`. Déplacer un conteneur unique est
+   ce qui garde le geste fluide : repositionner 60 cartouches à chaque frame ne
+   l'était pas. */
+
+const LARGEUR = 146, HAUTEUR = 58, ECART = 14, ETAGE = 118, GENERATIONS_MAX = 6;
+const GENERATIONS_CADREES = 2;  // souche + parents + grands-parents
+
+function poserAscendance(racine) {
+  const cartes = [], liens = [];
+  const mesurer = (id, gen, chemin) => {
+    if (gen >= GENERATIONS_MAX || chemin.has(id)) return LARGEUR + ECART;
+    const ps = parentsDe(id);
+    if (!ps.length) return LARGEUR + ECART;
+    const suite = new Set(chemin).add(id);
+    let somme = 0;
+    for (const p of ps) somme += mesurer(p, gen + 1, suite);
+    return Math.max(LARGEUR + ECART, somme);
+  };
+  const poser = (id, gen, x0, chemin) => {
+    const large = mesurer(id, gen, chemin);
+    const carte = { id, gen, x: x0 + large / 2 - LARGEUR / 2, y: -gen * ETAGE };
+    cartes.push(carte);
+    if (gen >= GENERATIONS_MAX || chemin.has(id)) return carte;
+    const suite = new Set(chemin).add(id);
+    let x = x0;
+    for (const p of parentsDe(id)) {
+      liens.push([poser(p, gen + 1, x, suite), carte]);
+      x += mesurer(p, gen + 1, suite);
+    }
+    return carte;
+  };
+  poser(racine, 0, 0, new Set());
+  return { cartes, liens };
+}
+
+function poserDescendance(racine) {
+  const cartes = [], liens = [];
+  const mesurer = (id, gen, chemin) => {
+    if (gen >= GENERATIONS_MAX || chemin.has(id)) return LARGEUR + ECART;
+    const es = enfantsDe(id);
+    if (!es.length) return LARGEUR + ECART;
+    const suite = new Set(chemin).add(id);
+    let somme = 0;
+    for (const e of es) somme += mesurer(e, gen + 1, suite);
+    return Math.max(LARGEUR + ECART, somme);
+  };
+  const poser = (id, gen, x0, chemin) => {
+    const large = mesurer(id, gen, chemin);
+    const carte = { id, gen, x: x0 + large / 2 - LARGEUR / 2, y: gen * ETAGE };
+    cartes.push(carte);
+    if (gen >= GENERATIONS_MAX || chemin.has(id)) return carte;
+    const suite = new Set(chemin).add(id);
+    let x = x0;
+    for (const e of enfantsDe(id)) {
+      liens.push([carte, poser(e, gen + 1, x, suite)]);
+      x += mesurer(e, gen + 1, suite);
+    }
+    return carte;
+  };
+  const souche = poser(racine, 0, 0, new Set());
+  /* Les conjoints de la souche se posent à côté d'elle, sans descendance propre :
+     l'arbre de descendance montre une lignée, pas deux. */
+  let dx = souche.x + LARGEUR + ECART;
+  for (const c of conjointsDe(racine)) {
+    cartes.push({ id: c.id, gen: 0, x: dx, y: 0, conjoint: true });
+    dx += LARGEUR + ECART;
+  }
+  return { cartes, liens };
+}
+
+function dessinerArbre() {
+  const hote = $('#cartouches'), svg = $('#traits');
+  if (!app.ancre || !app.personnes.has(app.ancre)) {
+    hote.innerHTML = '';
+    svg.innerHTML = '';
+    return;
+  }
+  const { cartes, liens } = app.vue === 'asc' ? poserAscendance(app.ancre) : poserDescendance(app.ancre);
+
+  // Tout ramener dans le quadrant positif : les ascendants sont posés en y négatif.
+  const minX = Math.min.apply(null, cartes.map(c => c.x));
+  const minY = Math.min.apply(null, cartes.map(c => c.y));
+  for (const c of cartes) { c.x -= minX; c.y -= minY; }
+  const largeurTotale = Math.max.apply(null, cartes.map(c => c.x + LARGEUR));
+  const hauteurTotale = Math.max.apply(null, cartes.map(c => c.y + HAUTEUR));
+
+  hote.innerHTML = cartes.map(c => {
+    const p = app.personnes.get(c.id);
+    const classes = ['cartouche'];
+    if (c.id === app.selection) classes.push('actif');
+    if (c.id === app.ancre) classes.push('souche');
+    return '<button class="' + classes.join(' ') + '" data-id="' + ech(c.id) + '" style="left:' + c.x +
+      'px; top:' + c.y + 'px; width:' + LARGEUR + 'px; height:' + HAUTEUR + 'px">' +
+      '<b>' + ech(nomCourt(p)) + '</b>' +
+      '<i>' + ech(bornes(p) || '—') + '</i>' +
+      '<em>' + ech((p.naissance && p.naissance.lieu) || '') + '</em>' +
+      '</button>';
+  }).join('');
+
+  // Une équerre par lien : on descend du parent, on va au droit de l'enfant, on
+  // rejoint son bord. Le tracé orthogonal se lit mieux qu'une diagonale quand
+  // deux parents partagent le même enfant.
+  const traits = liens.map(([haut, bas]) => {
+    const xh = haut.x + LARGEUR / 2, xb = bas.x + LARGEUR / 2;
+    const yh = haut.y + HAUTEUR, yb = bas.y;
+    const milieu = (yh + yb) / 2;
+    return 'M' + xb + ' ' + yb + 'V' + milieu + 'H' + xh + 'V' + yh;
+  }).join(' ');
+  svg.setAttribute('width', largeurTotale);
+  svg.setAttribute('height', hauteurTotale);
+  svg.innerHTML = '<path d="' + traits + '" stroke="#B9A98E" stroke-width="1.3"/>';
+
+  plan.largeur = largeurTotale;
+  plan.hauteur = hauteurTotale;
+  cartesPosees = cartes;
+
+  const p = app.personnes.get(app.ancre);
+  $('#mot-ancre').textContent = app.vue === 'asc' ? 'Ascendance de' : 'Descendance de';
+  $('#nom-ancre').textContent = nomComplet(p);
+  rendreTiroir();
+}
+
+/* ── Pan et zoom ─────────────────────────────────────────────────────── */
+
+const plan = { x: 0, y: 0, k: 1, largeur: 0, hauteur: 0 };
+let cartesPosees = [];
+const pointeurs = new Map();
+let distanceInitiale = 0, kInitial = 1, aPane = false, carteTouchee = null;
+
+function appliquerPlan() {
+  $('#plan').style.transform = 'translate(' + plan.x + 'px,' + plan.y + 'px) scale(' + plan.k + ')';
+}
+function ajusterCanevas() {
+  const boite = $('#canevas').getBoundingClientRect();
+  if (!plan.largeur || !boite.width) return;
+  const marge = 20;
+  plan.k = Math.min(1.1, Math.max(0.14,
+    Math.min((boite.width - marge * 2) / plan.largeur, (boite.height - marge * 2) / plan.hauteur)));
+  plan.x = (boite.width - plan.largeur * plan.k) / 2;
+  plan.y = (boite.height - plan.hauteur * plan.k) / 2;
+  appliquerPlan();
+}
+
+/* Le cadrage par défaut ne montre que trois générations.
+   Ce n'est pas un choix esthétique, c'est de l'arithmétique : la quatrième
+   génération d'une ascendance complète aligne huit cartouches, soit plus de
+   1 300 px. Les faire tenir dans 390 px réduit les noms à quatre pixels de haut,
+   et cadrer sur la seule souche laisse ses parents hors champ, chacun étant
+   centré sur son propre sous-arbre. On cadre donc la souche, ses parents et ses
+   grands-parents ; le reste est tracé, et se rejoint en panant, en dézoomant,
+   ou en recentrant sur quelqu'un de plus haut. */
+function cadrerSouche() {
+  const boite = $('#canevas').getBoundingClientRect();
+  const proches = cartesPosees.filter(c => c.gen <= GENERATIONS_CADREES);
+  if (!proches.length || !boite.width) return ajusterCanevas();
+  const x0 = Math.min.apply(null, proches.map(c => c.x));
+  const x1 = Math.max.apply(null, proches.map(c => c.x + LARGEUR));
+  const y0 = Math.min.apply(null, proches.map(c => c.y));
+  const y1 = Math.max.apply(null, proches.map(c => c.y + HAUTEUR));
+  const marge = 16;
+  plan.k = Math.min(1.15, Math.max(0.3,
+    Math.min((boite.width - marge * 2) / (x1 - x0), (boite.height - marge * 2) / (y1 - y0))));
+  // Les trois générations donnent l'échelle, pas le point de vue : on centre sur
+  // la souche en largeur (son entourage se lit alors des deux côtés) et sur tout
+  // le tracé en hauteur, sinon l'écran reste vide au-dessus et au-dessous.
+  const souche = cartesPosees.find(c => c.id === app.ancre && !c.conjoint) || proches[0];
+  plan.x = boite.width / 2 - (souche.x + LARGEUR / 2) * plan.k;
+  const hautTout = Math.min.apply(null, cartesPosees.map(c => c.y));
+  const basTout = Math.max.apply(null, cartesPosees.map(c => c.y + HAUTEUR));
+  plan.y = boite.height / 2 - (hautTout + basTout) / 2 * plan.k;
+  appliquerPlan();
+}
+/* Zoomer autour d'un point de l'écran : le point visé doit rester sous le doigt,
+   sinon le contenu fuit dès qu'on pince ailleurs qu'au centre. */
+function zoomerVers(k, cx, cy) {
+  const boite = $('#canevas').getBoundingClientRect();
+  const px = cx - boite.left, py = cy - boite.top;
+  const nouveau = Math.min(2.4, Math.max(0.18, k));
+  plan.x = px - (px - plan.x) * (nouveau / plan.k);
+  plan.y = py - (py - plan.y) * (nouveau / plan.k);
+  plan.k = nouveau;
+  appliquerPlan();
+}
+
+function brancherCanevas() {
+  const zone = $('#canevas');
+  const centre = () => {
+    const b = zone.getBoundingClientRect();
+    return { x: b.left + b.width / 2, y: b.top + b.height / 2 };
+  };
+  zone.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.zoom, #tiroir')) return;
+    pointeurs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    aPane = false;
+    const carte = e.target.closest('.cartouche');
+    carteTouchee = carte ? carte.dataset.id : null;
+    if (pointeurs.size === 2) {
+      const [a, b] = Array.from(pointeurs.values());
+      distanceInitiale = Math.hypot(a.x - b.x, a.y - b.y);
+      kInitial = plan.k;
+    }
+    zone.setPointerCapture(e.pointerId);
+  });
+  zone.addEventListener('pointermove', (e) => {
+    const p = pointeurs.get(e.pointerId);
+    if (!p) return;
+    if (pointeurs.size === 1) {
+      const dx = e.clientX - p.x, dy = e.clientY - p.y;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) aPane = true;
+      plan.x += dx; plan.y += dy;
+      appliquerPlan();
+    }
+    pointeurs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointeurs.size === 2) {
+      const [a, b] = Array.from(pointeurs.values());
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (distanceInitiale > 0) {
+        aPane = true;
+        zoomerVers(kInitial * (d / distanceInitiale), (a.x + b.x) / 2, (a.y + b.y) / 2);
+      }
+    }
+  });
+  const relacher = (e) => {
+    pointeurs.delete(e.pointerId);
+    if (pointeurs.size < 2) distanceInitiale = 0;
+  };
+  zone.addEventListener('pointerup', (e) => {
+    // La sélection se fait ici, pas sur un `click` : setPointerCapture, qu'il
+    // faut pour que le pan survive à un doigt sorti du canevas, redirige aussi
+    // le click vers le canevas — le cartouche ne le recevait jamais.
+    if (carteTouchee && !aPane) {
+      app.selection = carteTouchee;
+      dessinerArbre();
+    }
+    carteTouchee = null;
+    relacher(e);
+  });
+  zone.addEventListener('pointercancel', (e) => { carteTouchee = null; relacher(e); });
+  zone.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    zoomerVers(plan.k * (e.deltaY < 0 ? 1.12 : 1 / 1.12), e.clientX, e.clientY);
+  }, { passive: false });
+
+  $('#b-plus').onclick = () => { const c = centre(); zoomerVers(plan.k * 1.25, c.x, c.y); };
+  $('#b-moins').onclick = () => { const c = centre(); zoomerVers(plan.k / 1.25, c.x, c.y); };
+  $('#b-ajuster').onclick = ajusterCanevas;
+  $('#b-recentrer').onclick = cadrerSouche;
+  $('#b-fermer-tiroir').onclick = () => { app.selection = null; dessinerArbre(); };
+  $('#b-ouvrir-fiche').onclick = () => { if (app.selection) ouvrirFiche(app.selection, true); };
+  $('#b-recentrer-sur').onclick = () => {
+    if (!app.selection) return;
+    app.ancre = app.selection;
+    dessinerArbre();
+    cadrerSouche();
+  };
+  $('#bascule-vue').onclick = (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    app.vue = b.dataset.vue;
+    for (const x of $$('#bascule-vue button')) x.classList.toggle('actif', x === b);
+    dessinerArbre();
+    cadrerSouche();
+  };
+}
+
+function rendreTiroir() {
+  const t = $('#tiroir'), zone = $('#canevas');
+  if (!app.selection || !app.personnes.has(app.selection)) {
+    t.hidden = true;
+    zone.classList.remove('tiroir-ouvert');
+    return;
+  }
+  const p = app.personnes.get(app.selection);
+  t.hidden = false;
+  zone.classList.add('tiroir-ouvert');
+  $('#tiroir-nom').textContent = nomComplet(p);
+  $('#tiroir-detail').textContent =
+    [bornes(p), (p.naissance && p.naissance.lieu) || '', p.profession || ''].filter(Boolean).join(' · ') || '—';
+}
+
+/* ══ Fiche d'une personne ═════════════════════════════════════════════ */
+
+function ouvrirFiche(id, empiler) {
+  app.fiche = id;
+  app.volet = 'civil';
+  rendreFiche();
+  montrer('fiche', empiler !== false);
+}
+
+function rendreFiche() {
+  const p = app.personnes.get(app.fiche);
+  if (!p) { retour(); return; }
+
+  $('#fiche-nom').textContent = nomComplet(p);
+  const morceaux = [];
+  const n = evenementTexte(p.naissance), d = evenementTexte(p.deces);
+  if (n) morceaux.push((estDecedee(p) ? '° ' : 'Né' + (p.sexe === 'F' ? 'e' : '') + ' le ') + n);
+  if (d) morceaux.push('† ' + d);
+  const age = ageAuDeces(p);
+  if (age) morceaux.push(age);
+  $('#fiche-dates').innerHTML = morceaux.length
+    ? morceaux.map(ech).join('<span style="color: var(--filet-fonce)">·</span>')
+    : '<span style="color: var(--encre-5); font-style: italic">Aucune date connue</span>';
+
+  const famille = parentsDe(p.id).length + conjointsDe(p.id).length + enfantsDe(p.id).length + fratrieDe(p.id).length;
+  const sourcesCitees = new Set();
+  for (const e of evenementsDe(p.id)) for (const s of e.ev.sources || []) sourcesCitees.add(s);
+  const onglets = $$('#onglets-fiche button');
+  onglets[1].querySelector('small').textContent = famille || '';
+  onglets[2].querySelector('small').textContent = sourcesCitees.size || '';
+  for (const b of onglets) b.classList.toggle('actif', b.dataset.vol === app.volet);
+
+  const corps = $('#corps-fiche');
+  if (app.volet === 'civil') corps.innerHTML = voletCivil(p);
+  else if (app.volet === 'famille') corps.innerHTML = voletFamille(p);
+  else corps.innerHTML = voletSources(p, sourcesCitees);
+
+  $('#b-modifier').hidden = !peutEcrire();
+  $('#b-rattacher').hidden = !peutEcrire();
+}
+
+function voletCivil(p) {
+  const lignes = [
+    ['Nom', p.nom],
+    ['Nom de naissance', p.nom_naissance && p.nom_naissance !== p.nom ? p.nom_naissance : ''],
+    ['Prénoms', p.prenoms],
+    ['Sexe', { M: 'Masculin', F: 'Féminin' }[p.sexe] || 'Non renseigné'],
+    ['Profession', p.profession]
+  ].filter(l => l[1]);
+
+  let html = '<div><span class="surtitre" style="display: block; margin-bottom: 10px">État civil</span>' +
+    lignes.map(l => '<div class="ligne-civil"><span>' + ech(l[0]) + '</span><span>' + ech(l[1]) + '</span></div>').join('') +
+    '</div>';
+
+  const evs = evenementsDe(p.id);
+  html += '<div style="display: flex; flex-direction: column; gap: 10px">' +
+    '<span class="surtitre">Événements</span>';
+  if (!evs.length) {
+    html += '<p class="vide" style="padding: 12px 0; text-align: left">Aucun événement daté. ' +
+      'Une information sans date reste sans date&nbsp;: elle ne se déduit pas.</p>';
+  } else {
+    html += evs.map(e => carteEvenement(e)).join('');
+  }
+  html += '</div>';
+
+  if (p.notes) {
+    html += '<div style="display: flex; flex-direction: column; gap: 8px">' +
+      '<span class="surtitre">Notes</span>' +
+      '<p style="margin: 0; font-size: 14px; line-height: 1.55; color: var(--encre-2); white-space: pre-wrap">' +
+      ech(p.notes) + '</p></div>';
+  }
+  html += '<div style="height: 8px"></div>';
+  return html;
+}
+
+function carteEvenement(e) {
+  const ids = e.ev.sources || [];
+  const noms = ids.map(id => app.sources.has(id) ? app.sources.get(id).titre : 'Source supprimée');
+  const pied = ids.length
+    ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3D5A8C" stroke-width="1.7"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/></svg>' +
+      '<span class="nom">' + ech(noms.join(' · ')) + '</span>'
+    : '<span class="sans">Aucune source</span>';
+  const bouton = peutEcrire()
+    ? '<button class="lien" data-source-pour="' + ech(JSON.stringify(e.ref)) + '" style="font-size: 11.5px">' +
+      (ids.length ? 'Modifier' : 'Rattacher') + '</button>'
+    : '';
+  const date = e.ev.date ? dateLongue(e.ev.date) : (e.ev.date_texte || '');
+  return '<div class="evenement">' +
+    '<div class="titre"><b>' + ech(e.titre) + '</b><span>' + ech(date) + '</span></div>' +
+    (e.ev.lieu ? '<span style="font-size: 13px; color: var(--encre-3)">' + ech(e.ev.lieu) + '</span>' : '') +
+    '<div class="pied-source">' + pied + bouton + '</div></div>';
+}
+
+function voletFamille(p) {
+  const groupes = [
+    ['Parents', parentsDe(p.id)],
+    ['Union', conjointsDe(p.id).map(c => c.id)],
+    ['Frères et sœurs', fratrieDe(p.id)],
+    ['Enfants', enfantsDe(p.id)]
+  ].filter(g => g[1].length);
+
+  if (!groupes.length) {
+    return '<p class="vide">Personne n\'est encore rattaché à ' + ech(nomComplet(p)) + '.' +
+      (peutEcrire() ? '<br>Le bouton «&nbsp;Rattacher&nbsp;» ci-dessous ouvre le lien à créer.' : '') + '</p>';
+  }
+  return groupes.map(g =>
+    '<div><span class="surtitre" style="display: block; margin-bottom: 8px">' + ech(g[0]) + '</span>' +
+    g[1].map(id => ligneListe(id)).join('') + '</div>').join('');
+}
+
+function ligneListe(id) {
+  const p = app.personnes.get(id);
+  if (!p) return '';
+  const detail = [bornes(p), (p.naissance && p.naissance.lieu) || ''].filter(Boolean).join(' · ');
+  return '<button class="liste-personne" data-personne="' + ech(id) + '">' +
+    '<div class="pastille">' + ech(initiales(p)) + '</div>' +
+    '<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 1px; min-width: 0">' +
+    '<span class="serif" style="font-size: 17px; line-height: 1.15">' + ech(nomComplet(p)) + '</span>' +
+    '<span class="num" style="font-size: 11.5px; color: var(--encre-4)">' + ech(detail || '—') + '</span></div>' +
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9BCA6" stroke-width="1.8" stroke-linecap="square"><path d="M9 5l7 7-7 7"/></svg>' +
+    '</button>';
+}
+
+function voletSources(p, citees) {
+  if (!citees.size) {
+    return '<p class="vide">Aucun événement de cette fiche ne porte encore de source.<br>' +
+      'C\'est ce qui sépare un arbre attesté d\'un arbre de complaisance.</p>';
+  }
+  return Array.from(citees).map(id => {
+    const s = app.sources.get(id);
+    if (!s) return '';
+    const usages = usagesDeSource(id);
+    return '<button class="carte-source" data-source="' + ech(id) + '">' +
+      '<div class="haut2"><b>' + ech(s.titre) + '</b><span class="etiquette">' + ech(libelleType(s.type)) + '</span></div>' +
+      (s.cote ? '<span class="cote num">' + ech(s.cote) + '</span>' : '') +
+      '<div class="pied-source"><span style="font-size: 11.5px; color: var(--encre-4); flex: 1 1 auto">' +
+      ech(pluriel(usages.length, 'événement')) + ' rattaché' + (usages.length > 1 ? 's' : '') + '</span></div></button>';
+  }).join('');
+}
+
+/* ══ Liste des personnes ══════════════════════════════════════════════ */
+
+function rendrePersonnes() {
+  const q = pliage($('#rech-personnes').value);
+  const tri = (a, b) => {
+    const c = pliage(a.nom).localeCompare(pliage(b.nom));
+    return c || pliage(a.prenoms).localeCompare(pliage(b.prenoms));
+  };
+  const liste = Array.from(app.personnes.values())
+    .filter(p => !q || pliage(nomComplet(p)).includes(q))
+    .sort(tri);
+  $('#compte-personnes').textContent = pluriel(app.personnes.size, 'personne');
+  $('#liste-personnes').innerHTML = liste.length
+    ? liste.map(p => ligneListe(p.id)).join('')
+    : '<p class="vide">' + (app.personnes.size ? 'Aucun nom ne correspond.' :
+        'L\'arbre est vide. Le bouton ci-dessous ajoute la première personne.') + '</p>';
+  $('#b-nouvelle-personne').hidden = !peutEcrire();
+}
+
+/* ══ Sources ══════════════════════════════════════════════════════════ */
+
+const TYPES_SOURCE = [
+  ['etat-civil', 'État civil'],
+  ['paroissial', 'Paroissial'],
+  ['recensement', 'Recensement'],
+  ['en-ligne', 'En ligne'],
+  ['autre', 'Autre']
+];
+function libelleType(t) {
+  const trouve = TYPES_SOURCE.find(x => x[0] === t);
+  return trouve ? trouve[1] : 'Autre';
+}
+
+function rendreSources() {
+  $('#surtitre-sources').textContent = (app.arbre && app.arbre.nom) || '';
+  $('#compte-sources').textContent = pluriel(app.sources.size, 'source');
+
+  const filtres = [['tous', 'Toutes']].concat(TYPES_SOURCE.filter(t =>
+    Array.from(app.sources.values()).some(s => (s.type || 'autre') === t[0])));
+  $('#filtres-sources').innerHTML = filtres.map(f =>
+    '<button data-filtre="' + f[0] + '"' + (app.filtreSource === f[0] ? ' class="actif"' : '') + '>' + ech(f[1]) + '</button>').join('');
+
+  const liste = Array.from(app.sources.values())
+    .filter(s => app.filtreSource === 'tous' || (s.type || 'autre') === app.filtreSource)
+    .sort((a, b) => pliage(a.titre).localeCompare(pliage(b.titre)));
+
+  $('#liste-sources').innerHTML = liste.length ? liste.map(s => {
+    const usages = usagesDeSource(s.id);
+    return '<button class="carte-source" data-source="' + ech(s.id) + '">' +
+      '<div class="haut2"><b>' + ech(s.titre) + '</b><span class="etiquette">' + ech(libelleType(s.type)) + '</span></div>' +
+      (s.cote ? '<span class="cote num">' + ech(s.cote) + '</span>' : '') +
+      '<div class="pied-source">' +
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9C8F7D" stroke-width="1.7"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>' +
+      '<span style="font-size: 11.5px; color: var(--encre-4); flex: 1 1 auto">' +
+      (usages.length ? ech(pluriel(usages.length, 'événement')) : 'Rattachée à rien') + '</span></div></button>';
+  }).join('') : '<p class="vide">' + (app.sources.size ? 'Aucune source de ce type.' :
+      'Aucune source pour le moment. Une source, c\'est un acte&nbsp;: son titre, son type et sa cote.') + '</p>';
+
+  $('#b-nouvelle-source').hidden = !peutEcrire();
+}
+
+/* ══ Édition ══════════════════════════════════════════════════════════
+   Le même écran sert aux personnes et aux sources : deux formulaires, un seul
+   cadre, un seul bouton Enregistrer. `app.edition` dit ce qu'on est en train
+   de modifier et ce qu'il faut faire après. */
+
+function champTexte(id, libelle, valeur, options) {
+  const o = options || {};
+  return '<label class="champ"' + (o.largeur ? ' style="flex: 0 0 ' + o.largeur + 'px"' : '') + '>' +
+    '<span>' + ech(libelle) + '</span>' +
+    '<input id="' + id + '" type="' + (o.type || 'text') + '" value="' + ech(valeur || '') + '"' +
+    (o.placeholder ? ' placeholder="' + ech(o.placeholder) + '"' : '') +
+    ' autocomplete="off" autocapitalize="' + (o.type === 'date' ? 'off' : 'words') + '"></label>';
+}
+function blocEvenement(cle, titre, ev) {
+  const e = ev || {};
+  return '<div style="display: flex; flex-direction: column; gap: 12px">' +
+    '<span class="surtitre">' + ech(titre) + '</span>' +
+    '<div style="display: flex; gap: 10px">' +
+    champTexte('f-' + cle + '-date', 'Date', e.date, { type: 'date', largeur: 148 }) +
+    champTexte('f-' + cle + '-lieu', 'Lieu', e.lieu, { placeholder: 'Commune (département)' }) +
+    '</div>' +
+    champTexte('f-' + cle + '-texte', 'Ou date approchée', e.date_texte, { placeholder: 'vers 1899, avant 1745, an VII' }) +
+    '</div>';
+}
+function relireEvenement(cle, sourcesExistantes) {
+  const date = $('#f-' + cle + '-date').value.trim();
+  const texte = $('#f-' + cle + '-texte').value.trim();
+  const lieu = $('#f-' + cle + '-lieu').value.trim();
+  return { date, date_texte: texte, lieu, sources: sourcesExistantes || [] };
+}
+
+function ouvrirEditionPersonne(id) {
+  const p = id ? app.personnes.get(id) : { sexe: '?', naissance: {}, deces: null, inhumation: null };
+  app.edition = { genre: 'personne', id: id || null, brouillon: p, decede: id ? estDecedee(p) : false };
+  $('#titre-edition').textContent = id ? 'Modifier la fiche' : 'Nouvelle personne';
+  $('#b-supprimer').hidden = !id;
+  rendreFormulairePersonne();
+  montrer('edition', true);
+}
+
+function rendreFormulairePersonne() {
+  const p = app.edition.brouillon;
+  const sexes = [['M', 'Masculin'], ['F', 'Féminin'], ['?', 'Inconnu']];
+  $('#corps-edition').innerHTML =
+    '<div style="display: flex; flex-direction: column; gap: 12px">' +
+      '<span class="surtitre">Identité</span>' +
+      champTexte('f-prenoms', 'Prénoms', p.prenoms, { placeholder: 'Marcel Eugène Jules' }) +
+      '<div style="display: flex; gap: 10px">' +
+        champTexte('f-nom', 'Nom', p.nom) +
+        champTexte('f-nom-naissance', 'Nom de naissance', p.nom_naissance, { placeholder: 'Si différent' }) +
+      '</div>' +
+      '<div class="champ"><span>Sexe</span><div class="segments" id="f-sexe">' +
+        sexes.map(s => '<button type="button" data-sexe="' + s[0] + '"' +
+          ((p.sexe || '?') === s[0] ? ' class="actif"' : '') + '>' + s[1] + '</button>').join('') +
+      '</div></div>' +
+    '</div>' +
+    blocEvenement('naissance', 'Naissance', p.naissance) +
+    '<button type="button" class="bascule' + (app.edition.decede ? ' on' : '') + '" id="f-decede">' +
+      '<div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px">' +
+        '<span style="font-size: 14.5px; font-weight: 500">Personne décédée</span>' +
+        '<span style="font-size: 11.5px; color: var(--encre-4)">' +
+        (app.edition.decede ? 'Décès et inhumation sont saisissables' : 'Laissez fermé si vous ne savez pas') +
+        '</span></div><div class="rail"><i></i></div></button>' +
+    (app.edition.decede ? blocEvenement('deces', 'Décès', p.deces) + blocEvenement('inhumation', 'Inhumation', p.inhumation) : '') +
+    champTexte('f-profession', 'Profession', p.profession, { placeholder: 'Forgeron, blanchisseuse…' }) +
+    '<label class="champ"><span>Notes</span><textarea id="f-notes" placeholder="Ce que dit le document, tel qu\'il le dit.">' +
+      ech(p.notes || '') + '</textarea></label>' +
+    '<div style="height: 12px"></div>';
+
+  $('#f-sexe').onclick = (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    app.edition.brouillon = collecterPersonne();
+    app.edition.brouillon.sexe = b.dataset.sexe;
+    rendreFormulairePersonne();
+  };
+  $('#f-decede').onclick = () => {
+    app.edition.brouillon = collecterPersonne();
+    app.edition.decede = !app.edition.decede;
+    rendreFormulairePersonne();
+  };
+}
+
+/* Relit le formulaire sans écrire : sert aussi bien à l'enregistrement qu'à
+   redessiner le formulaire sans perdre ce qui vient d'être tapé. */
+function collecterPersonne() {
+  const ancien = app.edition.brouillon || {};
+  const p = {
+    nom: $('#f-nom').value.trim(),
+    nom_naissance: $('#f-nom-naissance').value.trim(),
+    prenoms: $('#f-prenoms').value.trim(),
+    sexe: ancien.sexe || '?',
+    profession: $('#f-profession').value.trim(),
+    notes: $('#f-notes').value,
+    naissance: relireEvenement('naissance', ancien.naissance && ancien.naissance.sources),
+    parents: ancien.parents || []
+  };
+  if (app.edition.decede) {
+    p.deces = relireEvenement('deces', ancien.deces && ancien.deces.sources);
+    p.inhumation = relireEvenement('inhumation', ancien.inhumation && ancien.inhumation.sources);
+  } else {
+    // Décocher « décédée » efface les deux blocs : garder une date de décès
+    // sur quelqu'un déclaré vivant serait une contradiction stockée.
+    p.deces = null;
+    p.inhumation = null;
+  }
+  return p;
+}
+
+function ouvrirEditionSource(id) {
+  const s = id ? app.sources.get(id) : { type: 'etat-civil' };
+  app.edition = { genre: 'source', id: id || null, brouillon: s };
+  $('#titre-edition').textContent = id ? 'Modifier la source' : 'Nouvelle source';
+  $('#b-supprimer').hidden = !id;
+  $('#corps-edition').innerHTML =
+    champTexte('f-titre', 'Titre', s.titre, { placeholder: "Acte de naissance de Marcel Boulland" }) +
+    '<label class="champ"><span>Type d\'acte</span><select id="f-type">' +
+      TYPES_SOURCE.map(t => '<option value="' + t[0] + '"' + ((s.type || 'autre') === t[0] ? ' selected' : '') + '>' + t[1] + '</option>').join('') +
+    '</select></label>' +
+    '<label class="champ"><span>Cote</span><textarea id="f-cote" placeholder="AD 95, 5 Mi 1234, vue 41 — acte n° 112">' + ech(s.cote || '') + '</textarea></label>' +
+    champTexte('f-url', 'Lien', s.url, { type: 'url', placeholder: 'https://…' }) +
+    '<label class="champ"><span>Notes</span><textarea id="f-notes-source">' + ech(s.notes || '') + '</textarea></label>' +
+    '<div style="height: 12px"></div>';
+  montrer('edition', true);
+}
+
+async function enregistrer() {
+  if (!peutEcrire()) return alerte("Votre rôle sur cet arbre ne permet pas de modifier.");
+  const bouton = $('#b-enregistrer');
+  bouton.disabled = true;
+  try {
+    if (app.edition.genre === 'personne') await enregistrerPersonne();
+    else await enregistrerSource();
+  } catch (e) {
+    alerte(expliquer(e));
+  } finally {
+    bouton.disabled = false;
+  }
+}
+
+async function enregistrerPersonne() {
+  const p = collecterPersonne();
+  if (!p.nom && !p.prenoms) { alerte('Il faut au moins un nom ou un prénom.'); return; }
+  if (p.nom_naissance === p.nom) p.nom_naissance = '';
+
+  if (app.edition.id) {
+    const id = app.edition.id;
+    await FB.updateDoc(refDoc('personnes', id), Object.assign({}, p, tampon(false)));
+    app.personnes.set(id, Object.assign({}, app.personnes.get(id), p, { id }));
+    indexer();
+    app.fiche = id;
+    retour();
+    rendreFiche();
+  } else {
+    const ref = FB.doc(refCollection('personnes'));
+    await FB.setDoc(ref, Object.assign({}, p, tampon(true)));
+    app.personnes.set(ref.id, Object.assign({ id: ref.id }, p));
+    indexer();
+    await majResume();
+    const suite = app.edition.apres;
+    retour();
+    if (suite) suite(ref.id);
+    else { if (!app.ancre) app.ancre = ref.id; ouvrirFiche(ref.id, false); }
+  }
+}
+
+async function enregistrerSource() {
+  const s = {
+    titre: $('#f-titre').value.trim(),
+    type: $('#f-type').value,
+    cote: $('#f-cote').value.trim(),
+    url: $('#f-url').value.trim(),
+    notes: $('#f-notes-source').value
+  };
+  if (!s.titre) { alerte("Une source a besoin d'un titre."); return; }
+
+  if (app.edition.id) {
+    const id = app.edition.id;
+    await FB.updateDoc(refDoc('sources', id), Object.assign({}, s, tampon(false)));
+    app.sources.set(id, Object.assign({}, app.sources.get(id), s, { id }));
+    retour();
+    rendreSources();
+  } else {
+    const ref = FB.doc(refCollection('sources'));
+    await FB.setDoc(ref, Object.assign({}, s, tampon(true)));
+    app.sources.set(ref.id, Object.assign({ id: ref.id }, s));
+    await majResume();
+    const suite = app.edition.apres;
+    retour();
+    if (suite) suite(ref.id);
+    else rendreSources();
+  }
+}
+
+async function supprimer() {
+  if (!peutEcrire()) return;
+  if (app.edition.genre === 'source') {
+    const usages = usagesDeSource(app.edition.id);
+    // Les règles ne peuvent pas parcourir les autres documents pour voir si une
+    // source est citée : c'est ici, l'arbre entier étant en mémoire, que ça se
+    // vérifie. Sinon un événement garderait un identifiant vers rien.
+    if (usages.length) {
+      return alerte('Cette source atteste encore ' + pluriel(usages.length, 'événement') +
+        '. Détachez-la d\'abord.');
+    }
+    if (!confirm('Supprimer cette source ?')) return;
+    await FB.deleteDoc(refDoc('sources', app.edition.id));
+    app.sources.delete(app.edition.id);
+    await majResume();
+    retour();
+    rendreSources();
+    return;
+  }
+
+  const id = app.edition.id;
+  const p = app.personnes.get(id);
+  if (!confirm('Supprimer ' + nomComplet(p) + ' ? Ses liens de parenté et ses unions disparaîtront aussi.')) return;
+
+  const lot = FB.writeBatch(FB.db);
+  for (const enfant of enfantsDe(id)) {
+    lot.update(refDoc('personnes', enfant), {
+      parents: (app.personnes.get(enfant).parents || []).filter(x => x !== id),
+      maj_par: app.email, maj_le: FB.serverTimestamp()
+    });
+  }
+  for (const u of unionsDe(id)) lot.delete(refDoc('unions', u.id));
+  lot.delete(refDoc('personnes', id));
+  await lot.commit();
+
+  for (const enfant of enfantsDe(id)) {
+    const e = app.personnes.get(enfant);
+    e.parents = (e.parents || []).filter(x => x !== id);
+  }
+  for (const u of unionsDe(id)) app.unions.delete(u.id);
+  app.personnes.delete(id);
+  indexer();
+  await majResume();
+
+  if (app.ancre === id) app.ancre = app.personnes.keys().next().value || null;
+  if (app.selection === id) app.selection = null;
+  app.pile = [];
+  montrer('arbre', false);
+  dessinerArbre();
+  cadrerSouche();
+}
+
+/* ══ Rattacher ════════════════════════════════════════════════════════ */
+
+const LIENS = [
+  { id: 'pere', nom: 'Père', icone: 'M12 11a4 4 0 100-8 4 4 0 000 8zM5 21c0-3.9 3.1-7 7-7s7 3.1 7 7' },
+  { id: 'mere', nom: 'Mère', icone: 'M12 11a4 4 0 100-8 4 4 0 000 8zM12 15v6M9 18h6' },
+  { id: 'conjoint', nom: 'Conjoint', icone: 'M8 11a3 3 0 100-6 3 3 0 000 6zM16 11a3 3 0 100-6 3 3 0 000 6zM11 8h2M3 20c0-2.8 2.2-5 5-5M21 20c0-2.8-2.2-5-5-5' },
+  { id: 'enfant', nom: 'Enfant', icone: 'M12 9a3 3 0 100-6 3 3 0 000 6zM12 12v9M8 16h8M9 21l3-3 3 3' }
+];
+
+function ouvrirRattacher(id) {
+  app.rat = { ancre: id, lien: null, cible: null };
+  const p = app.personnes.get(id);
+  $('#rat-a-qui').innerHTML = 'à <span style="color: var(--encre); font-weight: 500">' +
+    ech(nomComplet(p)) + '</span>' + (bornes(p) ? ' (' + ech(bornes(p)) + ')' : '');
+  $('#grille-liens').innerHTML = LIENS.map(l =>
+    '<button data-lien="' + l.id + '">' +
+    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="' + l.icone + '"/></svg>' +
+    '<span>' + l.nom + '</span></button>').join('');
+  $('#rech-rattacher').value = '';
+  $('#bloc-cible').hidden = true;
+  majBoutonLien();
+  montrer('rattacher', true);
+}
+
+function choisirLien(lien) {
+  app.rat.lien = lien;
+  app.rat.cible = null;
+  for (const b of $$('#grille-liens button, .large-lien')) b.classList.toggle('actif', b.dataset.lien === lien);
+
+  if (lien === 'fratrie' && !parentsDe(app.rat.ancre).length) {
+    // Une fratrie se définit par des parents communs : sans parent connu, il n'y
+    // a rien à partager. On le dit au lieu d'inventer un parent fantôme.
+    $('#bloc-cible').hidden = true;
+    app.rat.lien = null;
+    majBoutonLien();
+    return alerte('Pour rattacher un frère ou une sœur, il faut d\'abord un parent connu : c\'est lui qui fait la fratrie.');
+  }
+  const titres = { pere: 'Qui est le père ?', mere: 'Qui est la mère ?', conjoint: 'Avec qui ?', enfant: "Quel enfant ?", fratrie: 'Quel frère ou quelle sœur ?' };
+  $('#titre-cible').textContent = titres[lien] || '';
+  $('#bloc-cible').hidden = false;
+  rendreCandidats();
+  majBoutonLien();
+}
+
+function rendreCandidats() {
+  const q = pliage($('#rech-rattacher').value);
+  const exclus = new Set([app.rat.ancre]);
+  if (app.rat.lien === 'pere' || app.rat.lien === 'mere') {
+    for (const d of descendanceDe(app.rat.ancre)) exclus.add(d);
+  }
+  if (app.rat.lien === 'enfant') {
+    // Prendre pour enfant quelqu'un dont on descend ferait de l'ancre son propre
+    // aïeul. Les règles Firestore ne détectent pas ce cycle : il se refuse ici.
+    const remonte = (id, vus) => {
+      for (const p of parentsDe(id)) if (!vus.has(p)) { vus.add(p); remonte(p, vus); }
+      return vus;
+    };
+    for (const a of remonte(app.rat.ancre, new Set())) exclus.add(a);
+  }
+  const liste = Array.from(app.personnes.values())
+    .filter(p => !exclus.has(p.id))
+    .filter(p => !q || pliage(nomComplet(p)).includes(q))
+    .sort((a, b) => pliage(nomComplet(a)).localeCompare(pliage(nomComplet(b))))
+    .slice(0, 40);
+  $('#candidats').innerHTML = liste.map(p =>
+    ligneListe(p.id).replace('class="liste-personne"',
+      'class="liste-personne' + (app.rat.cible === p.id ? ' actif' : '') + '" data-candidat="' + ech(p.id) + '"')).join('');
+  for (const b of $$('#candidats [data-candidat]')) {
+    b.style.background = b.dataset.candidat === app.rat.cible ? 'var(--carte)' : 'none';
+    b.style.borderLeft = b.dataset.candidat === app.rat.cible ? '3px solid var(--sanguine)' : '0';
+    b.style.paddingLeft = b.dataset.candidat === app.rat.cible ? '9px' : '0';
+  }
+}
+
+function majBoutonLien() {
+  const b = $('#b-valider-lien');
+  if (!app.rat.lien) { b.disabled = true; b.textContent = 'Choisir un lien'; return; }
+  if (!app.rat.cible) { b.disabled = true; b.textContent = 'Choisir une personne'; return; }
+  b.disabled = false;
+  b.textContent = 'Rattacher ' + nomComplet(app.personnes.get(app.rat.cible));
+}
+
+async function validerRattachement(idCible) {
+  const { ancre, lien } = app.rat;
+  const cible = idCible || app.rat.cible;
+  if (!lien || !cible) return;
+
+  try {
+    if (lien === 'pere' || lien === 'mere') {
+      const p = app.personnes.get(ancre);
+      const parents = (p.parents || []).slice();
+      if (parents.includes(cible)) return alerte('Ce lien existe déjà.');
+      if (parents.length >= 2) return alerte(nomComplet(p) + ' a déjà deux parents. Détachez-en un d\'abord.');
+      if (descendanceDe(ancre).has(cible)) return alerte('Impossible : cela ferait de quelqu\'un son propre aïeul.');
+      parents.push(cible);
+      await FB.updateDoc(refDoc('personnes', ancre), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
+      p.parents = parents;
+
+    } else if (lien === 'enfant') {
+      const e = app.personnes.get(cible);
+      const parents = (e.parents || []).slice();
+      if (parents.includes(ancre)) return alerte('Ce lien existe déjà.');
+      if (parents.length >= 2) return alerte(nomComplet(e) + ' a déjà deux parents.');
+      if (descendanceDe(cible).has(ancre)) return alerte('Impossible : cela ferait de quelqu\'un son propre aïeul.');
+      parents.push(ancre);
+      await FB.updateDoc(refDoc('personnes', cible), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
+      e.parents = parents;
+
+    } else if (lien === 'fratrie') {
+      const e = app.personnes.get(cible);
+      const parents = parentsDe(ancre).slice(0, 2);
+      await FB.updateDoc(refDoc('personnes', cible), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
+      e.parents = parents;
+
+    } else if (lien === 'conjoint') {
+      const deja = unionsDe(ancre).some(u => (u.conjoints || []).includes(cible));
+      if (deja) return alerte('Cette union existe déjà.');
+      const ref = FB.doc(refCollection('unions'));
+      const u = { conjoints: [ancre, cible], mariage: null, divorce: null };
+      await FB.setDoc(ref, Object.assign({}, u, tampon(true)));
+      app.unions.set(ref.id, Object.assign({ id: ref.id }, u));
+    }
+    indexer();
+    app.fiche = ancre;
+    app.volet = 'famille';
+    retour();
+    rendreFiche();
+  } catch (e) {
+    alerte(expliquer(e));
+  }
+}
+
+/* ══ Rattacher une source à un événement ══════════════════════════════ */
+
+let refEvenementCourant = null;
+
+function ouvrirChoixSource(ref) {
+  refEvenementCourant = ref;
+  const actuelles = new Set(sourcesDeRef(ref));
+  const liste = Array.from(app.sources.values())
+    .sort((a, b) => pliage(a.titre).localeCompare(pliage(b.titre)));
+  $('#feuille-titre').textContent = 'Sources de cet événement';
+  $('#feuille-corps').innerHTML =
+    (liste.length ? liste.map(s =>
+      '<button class="carte-source" data-basculer="' + ech(s.id) + '"' +
+      (actuelles.has(s.id) ? '' : ' style="border-left-color: var(--filet-fonce); opacity: .62"') + '>' +
+      '<div class="haut2"><b>' + ech(s.titre) + '</b><span class="etiquette">' + ech(libelleType(s.type)) + '</span></div>' +
+      (s.cote ? '<span class="cote num">' + ech(s.cote) + '</span>' : '') +
+      '<div class="pied-source"><span style="font-size: 11.5px; color:' +
+      (actuelles.has(s.id) ? 'var(--bleu)' : 'var(--encre-5)') + '; flex: 1 1 auto">' +
+      (actuelles.has(s.id) ? 'Atteste cet événement — toucher pour détacher' : 'Toucher pour rattacher') +
+      '</span></div></button>').join('')
+      : '<p class="vide">Aucune source enregistrée.</p>') +
+    '<button class="bouton pointille" id="b-source-depuis-feuille" style="width: 100%">' +
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg>' +
+    'Créer une source et la rattacher</button>';
+  $('#feuille').classList.add('actif');
+}
+
+function sourcesDeRef(ref) {
+  const doc = ref.genre === 'personne' ? app.personnes.get(ref.id) : app.unions.get(ref.id);
+  return (doc && doc[ref.champ] && doc[ref.champ].sources) || [];
+}
+
+async function basculerSource(idSource) {
+  const ref = refEvenementCourant;
+  const collectionNom = ref.genre === 'personne' ? 'personnes' : 'unions';
+  const memoire = ref.genre === 'personne' ? app.personnes : app.unions;
+  const objet = memoire.get(ref.id);
+  const ev = Object.assign({ date: '', date_texte: '', lieu: '', sources: [] }, objet[ref.champ] || {});
+  const liste = (ev.sources || []).slice();
+  const i = liste.indexOf(idSource);
+  if (i >= 0) liste.splice(i, 1); else liste.push(idSource);
+  ev.sources = liste;
+  try {
+    await FB.updateDoc(refDoc(collectionNom, ref.id), {
+      [ref.champ]: ev, maj_par: app.email, maj_le: FB.serverTimestamp()
+    });
+    objet[ref.champ] = ev;
+    ouvrirChoixSource(ref);
+    rendreFiche();
+  } catch (e) {
+    alerte(expliquer(e));
+  }
+}
+
+/* ══ Branchements ═════════════════════════════════════════════════════ */
+
+function brancherTout() {
+  construireOnglets();
+  brancherCanevas();
+
+  for (const b of $$('[data-retour]')) b.onclick = retour;
+
+  // Un seul écouteur pour toutes les lignes de personnes, où qu'elles soient :
+  // les listes sont réécrites à chaque rendu, un écouteur par bouton fuirait.
+  document.addEventListener('click', (e) => {
+    const ligne = e.target.closest('[data-personne]');
+    if (ligne && !e.target.closest('[data-candidat]')) { ouvrirFiche(ligne.dataset.personne, true); return; }
+
+    const candidat = e.target.closest('[data-candidat]');
+    if (candidat) { app.rat.cible = candidat.dataset.candidat; rendreCandidats(); majBoutonLien(); return; }
+
+    const source = e.target.closest('[data-source]');
+    if (source && peutEcrire()) { ouvrirEditionSource(source.dataset.source); return; }
+
+    const pourEvenement = e.target.closest('[data-source-pour]');
+    if (pourEvenement) { ouvrirChoixSource(JSON.parse(pourEvenement.dataset.sourcePour)); return; }
+
+    const basculer = e.target.closest('[data-basculer]');
+    if (basculer) { basculerSource(basculer.dataset.basculer); return; }
+
+    const lien = e.target.closest('[data-lien]');
+    if (lien) { choisirLien(lien.dataset.lien); return; }
+
+    const filtre = e.target.closest('[data-filtre]');
+    if (filtre) { app.filtreSource = filtre.dataset.filtre; rendreSources(); return; }
+  });
+
+  $('#onglets-fiche').onclick = (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    app.volet = b.dataset.vol;
+    rendreFiche();
+  };
+  $('#b-modifier').onclick = () => ouvrirEditionPersonne(app.fiche);
+  $('#b-rattacher').onclick = () => ouvrirRattacher(app.fiche);
+  $('#b-voir-arbre').onclick = () => {
+    app.ancre = app.fiche;
+    app.selection = app.fiche;
+    app.pile = [];
+    montrer('arbre', false);
+    dessinerArbre();
+    cadrerSouche();
+  };
+  $('#b-enregistrer').onclick = enregistrer;
+  $('#b-supprimer').onclick = () => supprimer().catch(e => alerte(expliquer(e)));
+  $('#b-nouvelle-personne').onclick = () => ouvrirEditionPersonne(null);
+  $('#b-nouvelle-source').onclick = () => ouvrirEditionSource(null);
+  $('#rech-personnes').oninput = rendrePersonnes;
+  $('#rech-rattacher').oninput = rendreCandidats;
+  $('#b-valider-lien').onclick = () => validerRattachement();
+
+  // « Créer une personne » depuis l'écran Rattacher : on ouvre l'édition, et le
+  // rattachement se fait sur l'identifiant tout juste créé.
+  $('#b-creer-pour-lien').onclick = () => {
+    if (!app.rat.lien) return alerte('Choisissez d\'abord le lien de parenté.');
+    ouvrirEditionPersonne(null);
+    app.edition.apres = (idCree) => validerRattachement(idCree);
+  };
+
+  $('#b-fermer-feuille').onclick = () => $('#feuille').classList.remove('actif');
+  $('#feuille').onclick = (e) => { if (e.target === $('#feuille')) $('#feuille').classList.remove('actif'); };
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#b-source-depuis-feuille')) return;
+    const ref = refEvenementCourant;
+    $('#feuille').classList.remove('actif');
+    ouvrirEditionSource(null);
+    app.edition.apres = (idSource) => { refEvenementCourant = ref; basculerSource(idSource); };
+  });
+
+  window.addEventListener('resize', () => { if (ecranActuel === 'arbre') cadrerSouche(); });
+}
+
+/* ══ Connexion ════════════════════════════════════════════════════════ */
+
+async function connexionGoogle() {
+  const fournisseur = new FB.GoogleAuthProvider();
+  try {
+    await FB.signInWithPopup(FB.auth, fournisseur);
+  } catch (e) {
+    // Une PWA installée sur iOS n'ouvre pas de fenêtre surgissante : la
+    // redirection est le seul chemin qui marche là-bas.
+    if (['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment', 'auth/cancelled-popup-request'].includes(e.code)) {
+      return FB.signInWithRedirect(FB.auth, fournisseur);
+    }
+    if (e.code === 'auth/popup-closed-by-user') return;
+    if (e.code === 'auth/unauthorized-domain') {
+      return alerte("Ce domaine n'est pas autorisé dans Firebase Authentication ▸ Settings ▸ Domaines autorisés.");
+    }
+    alerte(expliquer(e));
+  }
+}
+
+async function demarrer() {
+  $('#b-google').onclick = connexionGoogle;
+  brancherTout();
+
+  try { await FB.getRedirectResult(FB.auth); } catch (e) { alerte(expliquer(e)); }
+
+  FB.onAuthStateChanged(FB.auth, async (utilisateur) => {
+    if (!utilisateur) {
+      app.email = null;
+      montrer('connexion', false);
+      return;
+    }
+    // Les règles comparent request.auth.token.email.lower() : le même pliage
+    // ici, sinon un compte écrit en majuscules serait refusé sans rien dire.
+    app.email = (utilisateur.email || '').toLowerCase();
+    montrer('chargement', false);
+    $('#mot-chargement').textContent = 'Chargement de l\'arbre…';
+    try {
+      await chargerTout();
+    } catch (e) {
+      $('#mot-chargement').innerHTML = ech(expliquer(e)) +
+        '<br><br><button class="lien" onclick="FB.signOut(FB.auth)">Changer de compte</button>';
+      return;
+    }
+    $('#nom-arbre').textContent = app.arbre.nom || 'Arbre';
+    if (!app.ancre) {
+      // Sans point d'ancrage, on ouvre sur la personne la plus récente : c'est
+      // celle qui vient d'être saisie, donc celle qu'on veut voir.
+      const parNaissance = Array.from(app.personnes.values())
+        .sort((a, b) => (anneeApprochee(b.naissance) || '0').localeCompare(anneeApprochee(a.naissance) || '0'));
+      app.ancre = parNaissance.length ? parNaissance[0].id : null;
+    }
+    app.pile = [];
+    montrer('arbre', false);
+    dessinerArbre();
+    cadrerSouche();
+    if (!app.personnes.size) {
+      alerte('L\'arbre est vide. L\'onglet Personnes permet d\'ajouter la première.');
+    }
+  });
+
+  $('#b-deconnexion').onclick = () => {
+    if (confirm('Se déconnecter de ' + app.email + ' ?')) FB.signOut(FB.auth);
+  };
+}
+
+// Le module d'amorçage ci-dessus est différé : au moment où ce script s'évalue,
+// window.FB n'existe pas encore. D'où l'attente de l'événement.
+if (window.FB) demarrer();
+else window.addEventListener('fb:pret', demarrer, { once: true });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => { /* hors ligne au premier chargement */ });
+  });
+}
+</script>
+</body>
+</html>

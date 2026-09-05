@@ -55,8 +55,13 @@ tient aux Security Rules.
 Nouveau dépôt GitHub, y déposer `index.html`, `manifest.json`, `sw.js` et les
 icônes, puis `Settings ▸ Pages ▸ Source : main / root`.
 
-Icônes à fournir : `icon-192.png`, `icon-512.png`, `icon-512-maskable.png`
-(fond `#F3EDE1`, marge de 12 % pour la version maskable).
+Les icônes (`icon-192.png`, `icon-512.png`, `icon-512-maskable.png`) sont dans le
+dépôt. Elles se régénèrent avec `python3 scripts/icones.py` (`pip install
+Pillow`) : fond `#F3EDE1`, glyphe sanguine, et une marge de sécurité plus large
+sur la version maskable, que le système rogne jusqu'à un cercle.
+
+À chaque mise en ligne, incrémenter `CACHE` dans `sw.js` — sinon la PWA déjà
+installée garde l'ancienne coquille.
 
 ## Étape 5 — Créer un arbre et inviter
 
