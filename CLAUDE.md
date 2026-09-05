@@ -19,7 +19,7 @@ Reprendre par `REPRISE.md`, qui dit où on en est et par quoi continuer.
 | Comment on l'installe de zéro | `README.md` |
 | À quoi ça ressemble | `design/*.dc.html`, et le canevas Claude Design |
 
-`PROJET.md` § 6 (« Pièges ») et § 7 (« Prochaines étapes ») sont les deux
+`PROJET.md` § 7 (« Pièges ») et § 8 (« Prochaines étapes ») sont les deux
 sections à ouvrir en premier pour reprendre le travail.
 
 ## Comment on travaille ici

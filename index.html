@@ -167,13 +167,22 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
 .bascule .rail i { display: block; width: 22px; height: 22px; border-radius: 50%; background: var(--carte); box-shadow: 0 1px 2px rgba(31,26,20,.25); }
 
 /* ── Message d'erreur ─────────────────────────────────────────────── */
-#alerte { position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); background: var(--encre); color: var(--creme); border-radius: 4px; padding: 13px 15px; font-size: 13.5px; line-height: 1.45; z-index: 99; display: none; box-shadow: 0 6px 20px rgba(31,26,20,.28); }
+/* pointer-events: none — sans lui, ce bandeau capte les clics de tout ce qu'il
+   recouvre pendant ses six secondes : le bouton « Ajouter une personne » sur un
+   arbre vide, et les entrées du bas de la feuille modale, devenaient
+   intouchables sans que rien ne l'explique. Un message ne se clique pas. */
+#alerte { position: fixed; left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); background: var(--encre); color: var(--creme); border-radius: 4px; padding: 13px 15px; font-size: 13.5px; line-height: 1.45; z-index: 99; display: none; pointer-events: none; box-shadow: 0 6px 20px rgba(31,26,20,.28); }
 #alerte.visible { display: block; }
 
 /* ── Feuille modale (choix d'une source) ──────────────────────────── */
 #feuille { position: fixed; inset: 0; z-index: 90; display: none; flex-direction: column; justify-content: flex-end; background: rgba(31,26,20,.35); }
 #feuille.actif { display: flex; }
 #feuille > div { background: var(--creme); border-radius: 8px 8px 0 0; max-height: 84%; display: flex; flex-direction: column; padding: 18px 20px max(18px, env(safe-area-inset-bottom)); gap: 14px; }
+/* La liste de la feuille défile, elle n'écrase pas. `.defile` pose flex: 1 1 0,
+   ce qui ici comprimait ses enfants — un bouton de 56 px n'en faisait plus que
+   24 et débordait sous le bas de l'écran, donc restait intouchable. */
+#feuille-corps { flex: 0 1 auto; min-height: 0; }
+#feuille-corps > * { flex: 0 0 auto; }
 </style>
 </head>
 <body>
@@ -388,6 +397,26 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
   </div>
 </section>
 
+<!-- ══ Import ══════════════════════════════════════════════════════ -->
+<section class="ecran" id="ec-import">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; display: flex; flex-direction: column; gap: 12px">
+    <div class="entete"><button class="icone-bouton" data-retour><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4A4137" stroke-width="1.7" stroke-linecap="square"><path d="M15 5l-7 7 7 7"/></svg></button></div>
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      <h1 style="font-size: 30px; line-height: 1.05; margin: 0">Importer un tableau</h1>
+      <p style="font-size: 13.5px; color: var(--encre-3); margin: 0">Collez le texte d'une page de tableau d'ascendance. Rien n'est écrit tant que vous n'avez pas relu ce qui sera créé.</p>
+    </div>
+  </div>
+  <div class="defile" style="padding: 16px 20px 0; display: flex; flex-direction: column; gap: 14px">
+    <label class="champ"><span>Texte à importer</span>
+      <textarea id="f-import" style="min-height: 190px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; line-height: 1.5" placeholder="PAGE | 505A-p1&#10;SOURCE | Tableau d&#39;ascendance n° 505A, page 1 | autre | …&#10;P | 1 | Boulland | Bernadette | F | …" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea></label>
+    <div id="apercu-import"></div>
+    <div style="height: 12px"></div>
+  </div>
+  <div class="bas" style="padding: 12px 20px 0; border-top: 1px solid var(--filet-clair)">
+    <button class="bouton" id="b-importer" style="width: 100%" disabled>Relisez d'abord</button>
+  </div>
+</section>
+
 <!-- ══ Feuille modale ══════════════════════════════════════════════ -->
 <div id="feuille"><div>
   <div style="display: flex; align-items: center; gap: 12px">
@@ -479,6 +508,12 @@ const app = {
   pile: []              // écrans empilés, pour le bouton retour
 };
 
+/* L'état complet, exposé pour l'inspection : c'est ce qui permet de vérifier
+   un import depuis la console du navigateur, ou depuis un contrôle automatisé,
+   sans avoir à deviner l'état de l'app à travers le DOM. Rien de secret n'y
+   passe — tout est déjà lisible côté client. */
+window.__app = app;
+
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 
@@ -540,7 +575,7 @@ function bornes(p) {
   return estDecedee(p) ? '†' : '';
 }
 /* Âge au décès : une soustraction d'années, corrigée si l'anniversaire n'était
-   pas passé. Aucun calcul sur des instants — voir PROJET.md § 6. */
+   pas passé. Aucun calcul sur des instants — voir PROJET.md § 7. */
 function ageAuDeces(p) {
   const n = p.naissance && p.naissance.date, d = p.deces && p.deces.date;
   if (!n || !d) return '';
@@ -770,7 +805,7 @@ async function majResume() {
 
 /* ── Navigation entre écrans ─────────────────────────────────────────── */
 
-const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'fiche', 'edition', 'rattacher'];
+const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'fiche', 'edition', 'rattacher', 'import'];
 const ONGLETS = [
   { id: 'arbre', nom: 'Arbre', icone: 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z' },
   { id: 'personnes', nom: 'Personnes', icone: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4' },
@@ -1547,6 +1582,14 @@ const LIENS = [
   { id: 'enfant', nom: 'Enfant', icone: 'M12 9a3 3 0 100-6 3 3 0 000 6zM12 12v9M8 16h8M9 21l3-3 3 3' }
 ];
 
+function ouvrirImport() {
+  $('#f-import').value = '';
+  $('#apercu-import').innerHTML = '';
+  $('#b-importer').disabled = true;
+  $('#b-importer').textContent = 'Relisez d\'abord';
+  montrer('import', true);
+}
+
 function ouvrirRattacher(id) {
   app.rat = { ancre: id, lien: null, cible: null };
   const p = app.personnes.get(id);
@@ -1724,6 +1767,314 @@ async function basculerSource(idSource) {
   }
 }
 
+/* ══ Import d'un tableau d'ascendance ═════════════════════════════════
+
+   Le format suit le document papier plutôt que le modèle Firestore, parce que
+   c'est le document qu'on recopie. Une ligne par personne, précédée de son
+   numéro Sosa — et la numérotation Sosa dit à elle seule toute la parenté : le
+   père de `n` porte le numéro `2n`, la mère `2n+1`. Les liens et les unions ne
+   se saisissent donc pas, ils se déduisent.
+
+     PAGE   | 505A-p1
+     SOURCE | titre | type | cote
+     P      | sosa | nom | prénoms | sexe | profession
+              | naiss_date | naiss_lieu | déces_date | déces_lieu | inhum_date | inhum_lieu
+     X      | sosa pair | date | lieu          ← mariage du couple (sosa, sosa+1)
+     X      | sosa pair | non marié            ← l'absence attestée, pas l'ignorance
+     C      | sosa | nom | prénoms | sexe | date | lieu   ← conjoint hors ascendance
+     ALIAS  | sosa | ref d'une personne déjà importée     ← raccord entre pages
+
+   Une date qui n'est pas au format AAAA-MM-JJ part telle quelle dans
+   `date_texte` : « vers 1899 » se recopie, il ne se convertit pas.
+
+   `ref_import` (« 505A-p1-s8 ») rend l'import rejouable — réimporter la même
+   page met à jour au lieu de dupliquer — et permet de raccorder la page 2 à la
+   page 1, la même personne y portant deux numéros Sosa différents. */
+
+const CHAMPS_P = ['sosa', 'nom', 'prenoms', 'sexe', 'profession',
+                  'n_date', 'n_lieu', 'd_date', 'd_lieu', 'i_date', 'i_lieu'];
+
+function evenementImporte(dateBrute, lieu, sources) {
+  const d = (dateBrute || '').trim(), l = (lieu || '').trim();
+  if (!d && !l) return null;
+  const exacte = /^\d{4}-\d{2}-\d{2}$/.test(d);
+  return {
+    date: exacte ? d : '',
+    date_texte: exacte ? '' : d,
+    lieu: l,
+    sources: (sources || []).slice()
+  };
+}
+
+function analyserImport(texte) {
+  const plan = { page: '', source: null, personnes: new Map(), conjoints: [],
+                 mariages: new Map(), alias: new Map(), erreurs: [] };
+  const lignes = String(texte || '').split('\n');
+
+  for (let i = 0; i < lignes.length; i++) {
+    const brute = lignes[i].trim();
+    if (!brute || brute[0] === '#') continue;
+    const champs = brute.split('|').map(c => c.trim());
+    const mot = champs[0].toUpperCase();
+    const ou = 'ligne ' + (i + 1) + ' : ';
+
+    if (mot === 'PAGE') {
+      plan.page = champs[1] || '';
+      if (!plan.page) plan.erreurs.push(ou + 'PAGE sans identifiant.');
+
+    } else if (mot === 'SOURCE') {
+      if (!champs[1]) { plan.erreurs.push(ou + 'SOURCE sans titre.'); continue; }
+      const type = (champs[2] || 'autre').toLowerCase();
+      if (!TYPES_SOURCE.some(t => t[0] === type)) {
+        plan.erreurs.push(ou + 'type de source inconnu « ' + type + ' ».');
+        continue;
+      }
+      plan.source = { titre: champs[1], type, cote: champs[3] || '', url: '', notes: champs[4] || '' };
+
+    } else if (mot === 'P') {
+      const sosa = Number(champs[1]);
+      if (!Number.isInteger(sosa) || sosa < 1) { plan.erreurs.push(ou + 'numéro Sosa invalide « ' + champs[1] + ' ».'); continue; }
+      if (plan.personnes.has(sosa)) { plan.erreurs.push(ou + 'le numéro Sosa ' + sosa + ' apparaît deux fois.'); continue; }
+      const v = {};
+      CHAMPS_P.forEach((nom, k) => { v[nom] = champs[k + 1] || ''; });
+      const sexe = (v.sexe || '?').toUpperCase();
+      if (!['M', 'F', '?'].includes(sexe)) { plan.erreurs.push(ou + 'sexe « ' + v.sexe + ' » : attendu M, F ou ?.'); continue; }
+      if (!v.nom && !v.prenoms) { plan.erreurs.push(ou + 'ni nom ni prénoms.'); continue; }
+      plan.personnes.set(sosa, {
+        sosa, nom: v.nom, nom_naissance: '', prenoms: v.prenoms, sexe,
+        profession: v.profession, notes: '',
+        naissance: evenementImporte(v.n_date, v.n_lieu),
+        deces: evenementImporte(v.d_date, v.d_lieu),
+        inhumation: evenementImporte(v.i_date, v.i_lieu),
+        parents: []
+      });
+
+    } else if (mot === 'X') {
+      const sosa = Number(champs[1]);
+      if (!Number.isInteger(sosa) || sosa < 2 || sosa % 2 !== 0) {
+        plan.erreurs.push(ou + 'X attend le numéro Sosa du père, donc un nombre pair (« ' + champs[1] + ' »).');
+        continue;
+      }
+      const reste = (champs[2] || '').trim();
+      plan.mariages.set(sosa, /^non mari/i.test(reste)
+        ? { absent: true }
+        : { evenement: evenementImporte(reste, champs[3]) });
+
+    } else if (mot === 'C') {
+      const sosa = Number(champs[1]);
+      if (!Number.isInteger(sosa) || sosa < 1) { plan.erreurs.push(ou + 'C : numéro Sosa invalide.'); continue; }
+      if (!champs[2] && !champs[3]) { plan.erreurs.push(ou + 'C : ni nom ni prénoms.'); continue; }
+      plan.conjoints.push({
+        sosa, nom: champs[2] || '', prenoms: champs[3] || '',
+        sexe: ['M', 'F', '?'].includes((champs[4] || '?').toUpperCase()) ? (champs[4] || '?').toUpperCase() : '?',
+        mariage: evenementImporte(champs[5], champs[6])
+      });
+
+    } else if (mot === 'ALIAS') {
+      const sosa = Number(champs[1]);
+      if (!Number.isInteger(sosa) || sosa < 1 || !champs[2]) { plan.erreurs.push(ou + 'ALIAS : attend un numéro Sosa et une référence.'); continue; }
+      plan.alias.set(sosa, champs[2]);
+
+    } else {
+      plan.erreurs.push(ou + 'mot-clé inconnu « ' + champs[0] + ' ».');
+    }
+  }
+
+  if (!plan.page && plan.personnes.size) plan.erreurs.push('Il manque la ligne PAGE : sans elle, un réimport créerait des doublons.');
+
+  // La parenté se déduit de la numérotation, elle ne se saisit pas.
+  let liens = 0;
+  for (const [sosa, p] of plan.personnes) {
+    for (const parent of [sosa * 2, sosa * 2 + 1]) {
+      if (plan.personnes.has(parent) || plan.alias.has(parent)) { p.parents.push(parent); liens++; }
+    }
+  }
+  for (const sosa of plan.mariages.keys()) {
+    if (!plan.personnes.has(sosa) && !plan.alias.has(sosa)) plan.erreurs.push('X | ' + sosa + ' : ce numéro Sosa n\'est pas dans le collage.');
+    else if (!plan.personnes.has(sosa + 1) && !plan.alias.has(sosa + 1)) plan.erreurs.push('X | ' + sosa + ' : le conjoint (Sosa ' + (sosa + 1) + ') manque.');
+  }
+  for (const c of plan.conjoints) {
+    if (!plan.personnes.has(c.sosa) && !plan.alias.has(c.sosa)) plan.erreurs.push('C | ' + c.sosa + ' : ce numéro Sosa n\'est pas dans le collage.');
+  }
+  for (const [sosa, ref] of plan.alias) {
+    if (plan.personnes.has(sosa)) plan.erreurs.push('ALIAS | ' + sosa + ' : ce numéro est déjà défini par une ligne P.');
+    if (!Array.from(app.personnes.values()).some(p => p.ref_import === ref)) {
+      plan.erreurs.push('ALIAS | ' + sosa + ' : aucune personne importée ne porte la référence « ' + ref + ' ».');
+    }
+  }
+
+  // Les couples : (2n, 2n+1) est une union dès que les deux sont là.
+  plan.unions = [];
+  const vus = new Set();
+  for (const sosa of plan.personnes.keys()) {
+    const pair = sosa % 2 === 0 ? sosa : sosa - 1;
+    if (pair < 2 || vus.has(pair)) continue;
+    const present = (n) => plan.personnes.has(n) || plan.alias.has(n);
+    if (present(pair) && present(pair + 1)) { vus.add(pair); plan.unions.push(pair); }
+  }
+  plan.liens = liens;
+  return plan;
+}
+
+function refDe(plan, sosa) {
+  return plan.alias.has(sosa) ? plan.alias.get(sosa) : plan.page + '-s' + sosa;
+}
+
+function rendreApercuImport(plan) {
+  const bloc = $('#apercu-import');
+  const bouton = $('#b-importer');
+  if (!plan.personnes.size && !plan.erreurs.length) {
+    bloc.innerHTML = '';
+    bouton.disabled = true;
+    bouton.textContent = 'Relisez d\'abord';
+    return;
+  }
+
+  const parRef = new Map(Array.from(app.personnes.values()).filter(p => p.ref_import).map(p => [p.ref_import, p]));
+  let neuves = 0, majs = 0;
+  const lignes = Array.from(plan.personnes.values()).sort((a, b) => a.sosa - b.sosa).map(p => {
+    const existante = parRef.get(refDe(plan, p.sosa));
+    if (existante) majs++; else neuves++;
+    const dates = [anneeApprochee(p.naissance), anneeApprochee(p.deces)].filter(Boolean).join(' – ');
+    return '<div style="display: flex; align-items: baseline; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--filet-clair)">' +
+      '<span class="num" style="font-size: 11.5px; color: var(--encre-5); width: 26px; flex: 0 0 auto">' + p.sosa + '</span>' +
+      '<span class="serif" style="font-size: 15px; flex: 1 1 auto; min-width: 0">' + ech(nomComplet(p)) + '</span>' +
+      '<span class="num" style="font-size: 11.5px; color: var(--encre-4); flex: 0 0 auto">' + ech(dates || '—') + '</span>' +
+      '<span style="font-size: 10px; font-weight: 600; color: ' + (existante ? 'var(--bleu)' : 'var(--sanguine)') + '; flex: 0 0 auto">' +
+      (existante ? 'MAJ' : 'NEUF') + '</span></div>';
+  }).join('');
+
+  const compte = (n, mot, plur) => '<span style="font-size: 13px">' + ech(pluriel(n, mot, plur)) + '</span>';
+  const resume = [
+    compte(plan.personnes.size + plan.conjoints.length, 'personne'),
+    compte(plan.unions.length + plan.conjoints.length, 'union'),
+    compte(plan.liens, 'lien de parenté', 'liens de parenté'),
+    plan.source ? '<span style="font-size: 13px; color: var(--bleu)">1 source</span>' : ''
+  ].filter(Boolean).join('<span style="color: var(--filet-fonce)"> · </span>');
+
+  const erreurs = plan.erreurs.length
+    ? '<div style="background: #F7E9E2; border: 1px solid #D9B5A3; border-radius: 4px; padding: 12px 13px; display: flex; flex-direction: column; gap: 6px">' +
+      '<span style="font-size: 12px; font-weight: 700; color: var(--sanguine-fonce)">' +
+      ech(pluriel(plan.erreurs.length, 'ligne refusée', 'lignes refusées')) + '</span>' +
+      plan.erreurs.map(e => '<span style="font-size: 12.5px; color: var(--encre-2); line-height: 1.45">' + ech(e) + '</span>').join('') +
+      '<span style="font-size: 12px; color: var(--encre-3); margin-top: 2px">Rien ne sera écrit tant qu\'il reste une erreur : un import à moitié fait serait pire qu\'un import refusé.</span></div>'
+    : '';
+
+  bloc.innerHTML = erreurs +
+    (plan.personnes.size
+      ? '<div style="display: flex; flex-direction: column; gap: 10px; margin-top: ' + (erreurs ? '14px' : '0') + '">' +
+        '<div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap"><span class="surtitre">Sera créé</span></div>' +
+        '<div style="color: var(--encre-3)">' + resume + '</div>' +
+        (plan.source ? '<div style="font-size: 12.5px; color: var(--bleu); line-height: 1.45">Tous les événements importés citeront « ' + ech(plan.source.titre) + ' ».</div>' : '') +
+        '<div>' + lignes + '</div>' +
+        (plan.conjoints.length ? '<div style="font-size: 12.5px; color: var(--encre-3)">Plus ' +
+          ech(plan.conjoints.map(c => nomComplet(c)).join(', ')) + ', hors ascendance.</div>' : '') +
+        '</div>'
+      : '');
+
+  bouton.disabled = !!plan.erreurs.length || !plan.personnes.size;
+  // Les conjoints hors ascendance comptent eux aussi : le bouton annonçait
+  // 15 personnes là où le résumé juste au-dessus en promettait 16.
+  const aCreer = neuves + plan.conjoints.length;
+  bouton.textContent = plan.erreurs.length ? 'Corrigez les lignes refusées'
+    : !plan.personnes.size ? 'Rien à importer'
+    : (majs ? 'Importer — ' + aCreer + ' à créer, ' + majs + ' à mettre à jour' : 'Importer ' + pluriel(aCreer, 'personne'));
+}
+
+async function appliquerImport(plan) {
+  if (!peutEcrire()) return alerte("Votre rôle sur cet arbre ne permet pas d'importer.");
+
+  let idSource = null;
+  if (plan.source) {
+    // Une source déjà présente sous le même titre est réutilisée : réimporter
+    // une page ne doit pas empiler des copies du même acte.
+    const deja = Array.from(app.sources.values()).find(s => s.titre === plan.source.titre);
+    if (deja) {
+      idSource = deja.id;
+    } else {
+      const ref = FB.doc(refCollection('sources'));
+      await FB.setDoc(ref, Object.assign({}, plan.source, tampon(true)));
+      app.sources.set(ref.id, Object.assign({ id: ref.id }, plan.source));
+      idSource = ref.id;
+    }
+  }
+  const sources = idSource ? [idSource] : [];
+  const avecSource = (ev) => ev ? Object.assign({}, ev, { sources: sources.slice() }) : null;
+
+  // Deux passes : les personnes d'abord, la parenté ensuite. Un `parents` ne
+  // peut pointer que vers un identifiant déjà attribué.
+  const parRef = new Map(Array.from(app.personnes.values()).filter(p => p.ref_import).map(p => [p.ref_import, p.id]));
+  const idParSosa = new Map();
+
+  for (const sosa of plan.alias.keys()) {
+    idParSosa.set(sosa, parRef.get(plan.alias.get(sosa)));
+  }
+  for (const p of Array.from(plan.personnes.values()).sort((a, b) => a.sosa - b.sosa)) {
+    const ref = refDe(plan, p.sosa);
+    const corps = {
+      nom: p.nom, nom_naissance: '', prenoms: p.prenoms, sexe: p.sexe,
+      profession: p.profession, notes: '',
+      naissance: avecSource(p.naissance) || { date: '', date_texte: '', lieu: '', sources: [] },
+      deces: avecSource(p.deces), inhumation: avecSource(p.inhumation),
+      ref_import: ref
+    };
+    const existant = parRef.get(ref);
+    if (existant) {
+      await FB.updateDoc(refDoc('personnes', existant), Object.assign({}, corps, tampon(false)));
+      app.personnes.set(existant, Object.assign({}, app.personnes.get(existant), corps, { id: existant }));
+      idParSosa.set(p.sosa, existant);
+    } else {
+      const refDoc2 = FB.doc(refCollection('personnes'));
+      await FB.setDoc(refDoc2, Object.assign({ parents: [] }, corps, tampon(true)));
+      app.personnes.set(refDoc2.id, Object.assign({ id: refDoc2.id, parents: [] }, corps));
+      idParSosa.set(p.sosa, refDoc2.id);
+    }
+  }
+
+  for (const p of plan.personnes.values()) {
+    const id = idParSosa.get(p.sosa);
+    const parents = p.parents.map(s => idParSosa.get(s)).filter(Boolean);
+    if (!id || !parents.length) continue;
+    await FB.updateDoc(refDoc('personnes', id), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
+    app.personnes.get(id).parents = parents;
+  }
+
+  const poserUnion = async (idA, idB, evenement, note) => {
+    if (!idA || !idB) return;
+    const deja = unionsDe(idA).find(u => (u.conjoints || []).includes(idB));
+    const corps = { conjoints: [idA, idB], mariage: avecSource(evenement), divorce: null, notes: note || '' };
+    if (deja) {
+      await FB.updateDoc(refDoc('unions', deja.id), Object.assign({}, corps, tampon(false)));
+      Object.assign(deja, corps);
+    } else {
+      const ref = FB.doc(refCollection('unions'));
+      await FB.setDoc(ref, Object.assign({}, corps, tampon(true)));
+      app.unions.set(ref.id, Object.assign({ id: ref.id }, corps));
+    }
+  };
+
+  for (const pair of plan.unions) {
+    const m = plan.mariages.get(pair);
+    await poserUnion(idParSosa.get(pair), idParSosa.get(pair + 1),
+      m && m.evenement ? m.evenement : null,
+      m && m.absent ? 'Non mariés, selon le tableau.' : '');
+  }
+  for (const c of plan.conjoints) {
+    const ref = FB.doc(refCollection('personnes'));
+    const corps = {
+      nom: c.nom, nom_naissance: '', prenoms: c.prenoms, sexe: c.sexe, profession: '', notes: '',
+      naissance: { date: '', date_texte: '', lieu: '', sources: [] },
+      deces: null, inhumation: null, parents: []
+    };
+    await FB.setDoc(ref, Object.assign({}, corps, tampon(true)));
+    app.personnes.set(ref.id, Object.assign({ id: ref.id }, corps));
+    await poserUnion(idParSosa.get(c.sosa), ref.id, c.mariage, '');
+  }
+
+  indexer();
+  await majResume();
+}
+
 /* ══ Branchements ═════════════════════════════════════════════════════ */
 
 function brancherTout() {
@@ -1863,8 +2214,63 @@ async function demarrer() {
     }
   });
 
+  // Le bouton ⋯ ouvrait directement une déconnexion : un seul geste, aucune
+  // annonce, et rien d'autre n'y était atteignable. Il porte maintenant le menu.
   $('#b-deconnexion').onclick = () => {
-    if (confirm('Se déconnecter de ' + app.email + ' ?')) FB.signOut(FB.auth);
+    $('#feuille-titre').textContent = app.email || 'Compte';
+    $('#feuille-corps').innerHTML =
+      (peutEcrire()
+        ? '<button class="large-lien" id="b-vers-import">' +
+          '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M12 3v11M8 11l4 4 4-4M4 19h16"/></svg>' +
+          '<span style="flex: 1 1 auto">Importer un tableau</span></button>'
+        : '') +
+      '<button class="large-lien" id="b-vraiment-deconnexion" style="color: var(--sanguine)">' +
+      '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M14 4H5v16h9M18 12H9M15 9l3 3-3 3"/></svg>' +
+      '<span style="flex: 1 1 auto">Se déconnecter</span></button>';
+    $('#feuille').classList.add('actif');
+  };
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#b-vers-import')) {
+      $('#feuille').classList.remove('actif');
+      ouvrirImport();
+    } else if (e.target.closest('#b-vraiment-deconnexion')) {
+      $('#feuille').classList.remove('actif');
+      FB.signOut(FB.auth);
+    }
+  });
+
+  // L'analyse tourne à chaque frappe, mais n'écrit rien : c'est une relecture,
+  // pas un import.
+  let planImport = null;
+  $('#f-import').oninput = () => {
+    planImport = analyserImport($('#f-import').value);
+    rendreApercuImport(planImport);
+  };
+  $('#b-importer').onclick = async () => {
+    if (!planImport || planImport.erreurs.length) return;
+    const b = $('#b-importer');
+    const libelle = b.textContent;
+    b.disabled = true;
+    b.textContent = 'Import en cours…';
+    try {
+      await appliquerImport(planImport);
+      $('#f-import').value = '';
+      planImport = null;
+      rendreApercuImport({ personnes: new Map(), conjoints: [], unions: [], erreurs: [], liens: 0 });
+      app.pile = [];
+      app.ancre = null;
+      const jeunes = Array.from(app.personnes.values())
+        .sort((a, b) => (anneeApprochee(b.naissance) || '0').localeCompare(anneeApprochee(a.naissance) || '0'));
+      if (jeunes.length) app.ancre = jeunes[0].id;
+      montrer('arbre', false);
+      dessinerArbre();
+      cadrerSouche();
+      alerte('Import terminé : ' + pluriel(app.personnes.size, 'personne') + ' dans l\'arbre.');
+    } catch (err) {
+      b.disabled = false;
+      b.textContent = libelle;
+      alerte(expliquer(err));
+    }
   };
 }
 

@@ -44,7 +44,7 @@ milliers de personnes : l'app charge toutes les `personnes` et toutes les
 `unions` d'un arbre en une fois, puis calcule ascendance, descendance, fratries
 et compteurs de sources côté client. Ça supprime d'un coup les index composites,
 les compteurs dénormalisés qui dérivent, et les requêtes par génération. Limite
-assumée, à surveiller au-delà de ~2 000 personnes (voir § 6).
+assumée, à surveiller au-delà de ~2 000 personnes (voir § 7).
 
 ## 3. Modèle de données
 
@@ -75,10 +75,11 @@ Firestore ne sait pas interroger les clés d'une map.
 | `naissance`, `deces`, `inhumation` | map | `{ date, date_texte, lieu, sources: [sourceId] }` |
 | `parents` | array\<personneId\> | 0 à 2 entrées — c'est **l'enfant** qui porte le lien |
 | `profession`, `notes` | string | |
+| `ref_import` | string | provenance, ex. `505A-p1-s8` — absent d'une saisie à la main |
 | `cree_par`, `cree_le`, `maj_par`, `maj_le` | | |
 
 `date` est une chaîne `AAAA-MM-JJ`, jamais un `Timestamp` : une date d'état
-civil est une date seule, pas un instant (voir § 6). `date_texte` porte
+civil est une date seule, pas un instant (voir § 7). `date_texte` porte
 l'imprécision réelle des archives — « vers 1899 », « avant 1745 », « an VII » —
 qui n'entre dans aucun format.
 
@@ -101,6 +102,9 @@ inverse en mémoire, au chargement.
 sources: [] }`, `divorce` (même forme ou `null`). Une union n'est pas la liste
 des enfants : les enfants pointent leurs parents eux-mêmes, l'union ne sert
 qu'à porter l'**événement** mariage et ses sources.
+
+L'union porte aussi un `notes` : c'est là qu'un import écrit « Non mariés, selon
+le tableau », faute de pouvoir le dire autrement.
 
 `mariage: null` sur une union qui existe quand même veut dire **« non mariés »**,
 et c'est une affirmation, pas un trou : les tableaux d'ascendance l'écrivent noir
@@ -145,7 +149,7 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
 3. **Vue de l'arbre** — canevas pan/zoom, bascule Ascendants / Descendants,
    sélection d'un cartouche, recentrage sur n'importe qui. *Construite, mais
    toujours le chantier design n° 1 — voir « Quatre générations ne tiennent pas
-   dans 390 px » au § 6.*
+   dans 390 px » au § 7.*
 4. **Fiche d'une personne** — onglets Fiche / Famille / Sources.
 5. **Édition** — formulaire ; les blocs Décès et Inhumation n'existent que si
    la personne est décédée.
@@ -155,8 +159,46 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
    pas construit : il n'y a encore personne à inviter, et l'onglet n'existe donc
    pas dans la barre de navigation.*
 8. **Sources** — liste filtrable par type d'acte.
+9. **Import** — atteignable par le menu ⋯ de la vue de l'arbre. Voir § 6.
 
-## 6. Pièges — à lire avant de reprendre
+## 6. L'import d'un tableau d'ascendance
+
+Les documents de départ sont des **tableaux d'ascendance en numérotation Sosa**,
+et le format d'import suit le document papier plutôt que le modèle Firestore —
+c'est le document qu'on recopie. Une ligne par personne, précédée de son numéro.
+
+```
+PAGE   | 505A-p1
+SOURCE | titre | type | cote
+P      | sosa | nom | prénoms | sexe | profession
+         | naiss_date | naiss_lieu | déces_date | déces_lieu | inhum_date | inhum_lieu
+X      | sosa pair | date | lieu     ← mariage du couple (sosa, sosa+1)
+X      | sosa pair | non marié       ← l'absence attestée, pas l'ignorance
+C      | sosa | nom | prénoms | sexe | date | lieu   ← conjoint hors ascendance
+ALIAS  | sosa | ref d'une personne déjà importée     ← raccord entre pages
+```
+
+**La numérotation Sosa dit à elle seule toute la parenté** : le père de `n` porte
+le numéro `2n`, la mère `2n+1`. Les liens et les unions ne se saisissent donc
+pas, ils se déduisent — c'est ce qui rend le collage court, et ce qui interdit
+qu'un lien contredise un numéro.
+
+Une date qui n'est pas au format `AAAA-MM-JJ` part telle quelle dans
+`date_texte` : « vers 1899 » se recopie, il ne se convertit pas.
+
+Tous les événements d'un collage citent la source déclarée en tête. Un tableau
+est une source secondaire, `type: 'autre'` — pas un acte. Les actes viendront
+par-dessus, avec leurs cotes.
+
+`ref_import` (`505A-p1-s8`) rend l'import **rejouable** : réimporter la même page
+met à jour au lieu de dupliquer. C'est aussi ce qui raccorde la page 2 à la
+page 1, la même personne y portant deux numéros Sosa différents —
+`ALIAS | 1 | 505A-p1-s8` dit que le Sosa 1 de la nouvelle page est déjà là.
+
+**Rien n'est écrit tant qu'une seule ligne est refusée.** Un import à moitié fait
+laisserait un arbre à moitié faux, et il n'y a pas d'annulation.
+
+## 7. Pièges — à lire avant de reprendre
 
 - **`git push` ne déploie pas les règles.** `firebase deploy --only
   firestore:rules` est une commande à part. Un correctif de règles resté en
@@ -204,6 +246,16 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
   l'emporte sur le `display: none` que le navigateur attache à `[hidden]` : le
   tiroir de sélection restait ouvert en permanence, vide. Il faut une règle
   `#tiroir[hidden] { display: none }` explicite.
+- **Un bandeau d'information capte les clics.** `#alerte` recouvrait pendant six
+  secondes ce qui passait sous lui — le bouton « Ajouter une personne » d'un
+  arbre vide, les entrées du bas d'une feuille modale — et les rendait
+  intouchables sans que rien ne l'explique. `pointer-events: none` : un message
+  ne se clique pas.
+- **`flex: 1 1 0` écrase au lieu de faire défiler.** La classe `.defile`,
+  appliquée au corps d'une feuille modale, comprimait ses enfants : un bouton de
+  56 px n'en faisait plus que 24 et débordait sous le bas de l'écran, donc
+  restait intouchable. Dans une feuille, le corps prend `flex: 0 1 auto` et ses
+  enfants `flex: 0 0 auto`.
 - **Quatre générations ne tiennent pas dans 390 px.** Huit arrière-grands-parents
   côte à côte font plus de 1 300 px : les faire tenir dans la largeur d'un
   téléphone réduit les noms à quatre pixels. Cadrer sur la seule souche ne marche
@@ -212,7 +264,7 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
   mais l'ouverture cadre sur trois — souche, parents, grands-parents. Le reste se
   rejoint en panant, en dézoomant, ou en recentrant sur quelqu'un de plus haut.
 
-## 7. Prochaines étapes
+## 8. Prochaines étapes
 
 1. ~~Créer le projet Firebase, activer Google, déployer règles et index~~ — fait
    le 5 septembre 2026 (`filiation-vasseur`, voir `REPRISE.md`).

@@ -74,7 +74,7 @@ service cloud.firestore {
 
       // Supprimer le document de l'arbre ne supprime PAS ses sous-collections :
       // Firestore n'a pas de suppression récursive côté client. L'app vide les
-      // sous-collections par lots avant de supprimer l'arbre — voir PROJET.md § 8.
+      // sous-collections par lots avant de supprimer l'arbre — voir PROJET.md § 7.
       allow delete: if estProprietaire(arbreId);
     }
 

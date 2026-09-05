@@ -45,8 +45,13 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 1. ~~Activer GitHub Pages et ajouter le domaine dans Firebase~~ — fait le
    5 septembre 2026. L'app est en ligne :
    https://grapinatpwts-crypto.github.io/arbre-genealogique/
-2. **Saisir la page 1 du tableau 505A** : 15 personnes, 1 conjoint, 8 unions.
-   La transcription est faite et relue, elle attend d'être tapée dans l'app.
+2. **Importer la page 1 du tableau 505A** : 15 personnes, 1 conjoint, 8 unions.
+   L'écran d'import existe — menu ⋯ de la vue de l'arbre, format dans
+   `PROJET.md` § 6 — et le collage est prêt. Puis les pages 2 à 9, qui se
+   raccordent à celle-ci par une ligne `ALIAS`.
+
+   Le collage ne vit pas dans ce dépôt : il est public, et ce sont des données
+   familiales, dont une personne vivante.
 3. **Retravailler la vue de l'arbre.** Elle fonctionne — quatre générations
    tracées, pan et zoom tactiles, cadrage sur trois générations à l'ouverture —
    mais elle reste le chantier design n° 1. Sa limite est arithmétique : la
@@ -148,4 +153,4 @@ documents de famille.
   domaine et écrit n'importe où. Il faut
   `setDoc(ref, { roles: { [email]: 'editeur' } }, { merge: true })`.
 
-Les autres sont dans `PROJET.md` § 6.
+Les autres sont dans `PROJET.md` § 7.
