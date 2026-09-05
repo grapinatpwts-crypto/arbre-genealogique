@@ -73,6 +73,10 @@ Les maquettes viennent de Claude Design : `design/*.dc.html` (un fichier par
 modifier, on édite ces fichiers et on **re-sème** le canevas — jamais le
 `filiation.html` produit, qui est régénéré et ignoré par git.
 
+Les maquettes portent des **données inventées** (Vasseur, Prigent, Chauvet…) :
+elles ne désignent personne et servent uniquement à voir l'écran rempli. Les
+vraies données ne sortent jamais de Firestore — le dépôt est public.
+
 Charte : papier d'archive. Fond crème `#F3EDE1`, cartes `#FBF7EF`, encre
 `#1F1A14`, filets `#DCD2C0`, accent sanguine `#9A5233`, bleu d'archive `#3D5A8C`
 pour tout ce qui touche aux sources. **EB Garamond** pour les noms et les

@@ -53,9 +53,15 @@ sur le document de l'arbre, quelle que soit la profondeur.
 
 ### `arbres/{arbreId}`
 
+**Les noms cités en exemple dans ce fichier, dans `DESIGN-LIGNEE.md` et dans les
+maquettes `design/*.dc.html` sont inventés** — Vasseur, Prigent, Chauvet, Saumur.
+Ils ne désignent personne et ne correspondent à aucune donnée de l'arbre. Le
+dépôt est public : aucune donnée familiale n'y entre, elles vivent dans
+Firestore. Ne pas les remplacer par de vrais noms pour « faire plus réaliste ».
+
 | Champ | Type | Rôle |
 |---|---|---|
-| `nom` | string | « Famille Vasseur — Prigent » |
+| `nom` | string | « Famille Vasseur — Prigent » *(inventé)* |
 | `membres` | array\<email\> | sert à la requête `array-contains` de l'écran Mes arbres |
 | `roles` | map email → rôle | `proprietaire` \| `editeur` \| `lecteur` |
 | `invites` | array\<email\> | membres qui ne se sont jamais connectés (badge « en attente ») |

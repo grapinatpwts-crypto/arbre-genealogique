@@ -164,6 +164,9 @@ ECH   = 0.7   // échelle d'ouverture
 
 ## 8. Données attendues
 
+Les noms qui suivent, comme ceux de la maquette, sont **inventés** : ils ne
+désignent personne. Le dépôt est public, aucune donnée familiale n'y figure.
+
 ```js
 // Une entrée par génération, de la plus récente à la plus ancienne (ASC).
 { ere: 'moderne', gens: [
