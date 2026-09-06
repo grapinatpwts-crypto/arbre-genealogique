@@ -227,6 +227,15 @@ laisserait un arbre à moitié faux, et il n'y a pas d'annulation.
   lire le document de l'arbre pour connaître le rôle. Firestore met ce `get()` en
   cache à l'intérieur d'une même requête, donc charger 148 personnes ne coûte pas
   148 lectures supplémentaires — mais 148 lectures isolées, si.
+- **Un `ALIAS` ne raccordait pas ce qu'il raccorde.** La parenté se déduit de la
+  numérotation en parcourant les lignes `P` : une personne arrivée par `ALIAS`
+  n'en fait pas partie, elle ne recevait donc jamais les parents que la page
+  apporte. La page 2 s'importait entière et détachée — seize ancêtres flottant
+  au-dessus de la personne dont ils descendent, et rien à l'écran pour le dire,
+  puisque chaque page prise séparément semblait juste. C'est réparé
+  (`plan.rattachements`) : les parents d'une personne aliassée s'**ajoutent** aux
+  siens au lieu de les remplacer, la page qui l'a créée restant seule maîtresse
+  du reste de sa fiche.
 - **Les règles ne détectent pas un cycle de filiation.** Rien n'empêche quelqu'un
   de devenir son propre aïeul par une fausse manip. La vérification se fait côté
   client, avant écriture, en parcourant l'ascendance déjà en mémoire.

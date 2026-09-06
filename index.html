@@ -2121,6 +2121,18 @@ function analyserImport(texte) {
     }
   }
 
+  // Une personne raccordée par ALIAS est déjà dans l'arbre, mais ses parents,
+  // eux, arrivent avec cette page — c'est même toute la raison d'être des pages
+  // 2 et suivantes. La boucle ci-dessus ne parcourt que `personnes` : le Sosa 8
+  // de la page 2, aliassé, n'y était pas et ne recevait donc jamais les Sosa 16
+  // et 17. La page s'importait entière et détachée, seize ancêtres flottant
+  // au-dessus d'une personne qui n'en avait aucun.
+  plan.rattachements = [];
+  for (const sosa of plan.alias.keys()) {
+    const parents = [sosa * 2, sosa * 2 + 1].filter(n => plan.personnes.has(n) || plan.alias.has(n));
+    if (parents.length) { plan.rattachements.push({ sosa, parents }); liens += parents.length; }
+  }
+
   // Les couples : (2n, 2n+1) est une union dès que les deux sont là.
   plan.unions = [];
   const vus = new Set();
@@ -2253,6 +2265,19 @@ async function appliquerImport(plan) {
     const id = idParSosa.get(p.sosa);
     const parents = p.parents.map(s => idParSosa.get(s)).filter(Boolean);
     if (!id || !parents.length) continue;
+    await FB.updateDoc(refDoc('personnes', id), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
+    app.personnes.get(id).parents = parents;
+  }
+
+  // Les parents d'une personne aliassée s'ajoutent aux siens au lieu de les
+  // remplacer : elle appartient à une autre page, qui reste seule maîtresse du
+  // reste de sa fiche.
+  for (const r of (plan.rattachements || [])) {
+    const id = idParSosa.get(r.sosa);
+    if (!id) continue;
+    const dejaLa = (app.personnes.get(id) || {}).parents || [];
+    const parents = dejaLa.concat(r.parents.map(s => idParSosa.get(s)).filter(x => x && !dejaLa.includes(x)));
+    if (parents.length === dejaLa.length) continue;
     await FB.updateDoc(refDoc('personnes', id), { parents, maj_par: app.email, maj_le: FB.serverTimestamp() });
     app.personnes.get(id).parents = parents;
   }

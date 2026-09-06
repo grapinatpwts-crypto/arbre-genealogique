@@ -3,7 +3,7 @@
 Point d'entrée pour une nouvelle session. Le détail technique est dans
 `PROJET.md`, les conventions de travail dans `CLAUDE.md`.
 
-Dernière mise à jour : **5 septembre 2026**.
+Dernière mise à jour : **6 septembre 2026**.
 
 **Reprendre par** : ouvrir l'app et saisir le tableau 505A. `index.html` est
 écrit ; ce qui reste à faire tient dans « Ce qui reste, dans l'ordre ».
@@ -46,13 +46,20 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
 1. ~~Activer GitHub Pages et ajouter le domaine dans Firebase~~ — fait le
    5 septembre 2026. L'app est en ligne :
    https://grapinatpwts-crypto.github.io/arbre-genealogique/
-2. **Importer la page 1 du tableau 505A** : 15 personnes, 1 conjoint, 8 unions.
-   L'écran d'import existe — menu ⋯ de la vue de l'arbre, format dans
-   `PROJET.md` § 6 — et le collage est prêt. Puis les pages 2 à 9, qui se
-   raccordent à celle-ci par une ligne `ALIAS`.
+2. **Importer les pages du tableau 505A.** L'écran d'import existe — menu ⋯ de
+   la vue de l'arbre, format dans `PROJET.md` § 6.
 
-   Le collage ne vit pas dans ce dépôt : il est public, et ce sont des données
-   familiales, dont une personne vivante.
+   - Page 1 : 15 personnes, 1 conjoint, 8 unions. **À passer en premier** : les
+     pages suivantes s'y raccordent par une ligne `ALIAS`, qui exige que la
+     personne soit déjà dans l'arbre.
+   - Pages 2 à 7 : transcrites le 6 septembre 2026, 83 personnes et 41 unions,
+     l'ascendance des Sosa 8 à 13. Elles s'importent dans n'importe quel ordre,
+     chacune ne dépendant que de la page 1.
+   - Pages 8 et 9 (Sosa 14 et 15) : pas encore photographiées.
+
+   Les collages ne vivent pas dans ce dépôt : il est public, et ce sont des
+   données familiales, dont une personne vivante. Ils restent sur le poste, à
+   côté des photos, avec la liste des lectures à confirmer sur l'original.
 3. ~~Retravailler la vue de l'arbre~~ — fait le 5 septembre 2026. C'est
    maintenant la vue **Lignée** : un parchemin qui défile, sans cartouche, où la
    main qui écrit dit le siècle. Elle vient de la maquette `VueArbre.dc.html` et
@@ -125,6 +132,15 @@ vivante. Elle reste sur le poste, à côté des photos.
 
 C'est ce tableau qui a fait ajouter `inhumation` au modèle (voir `PROJET.md` § 3).
 
+**Reçu le 6 septembre 2026 : les pages 2 à 7.** Une page par branche —
+l'ascendance des Sosa 8 à 13, jusqu'aux arrière-arrière-grands-parents (Sosa 64
+à 111). Transcrites et relues ; les lectures douteuses sont listées à côté du
+collage plutôt que devinées, et les cases illisibles restent vides.
+
+Ces pages ont fait apparaître un défaut de l'import qui ne se voyait pas sur la
+page 1 : la ligne `ALIAS` ne raccordait rien (voir `PROJET.md` § 7). Corrigé le
+même jour.
+
 **Restent à obtenir :**
 
 - **Les cotes des actes détenus.** Le rose de la feuille veut bien dire « acte
@@ -139,7 +155,7 @@ C'est ce tableau qui a fait ajouter `inhumation` au modèle (voir `PROJET.md` §
 
   En attendant, tout ce qui a été importé cite le tableau lui-même : une source
   secondaire honnête, que les actes viendront remplacer événement par événement.
-- **Les pages 2 à 9** du tableau 505A, et les autres documents familiaux.
+- **Les pages 8 et 9** du tableau 505A, et les autres documents familiaux.
 
 ### Comment traiter ces images quand elles arrivent
 
