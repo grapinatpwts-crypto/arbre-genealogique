@@ -127,10 +127,18 @@ C'est ce tableau qui a fait ajouter `inhumation` au modèle (voir `PROJET.md` §
 
 **Restent à obtenir :**
 
-- **Les cotes des actes détenus.** La feuille surligne en rose, sous la mention
-  « Actes détenus », les événements dont Guillaume possède l'acte. Ce sont eux
-  qui deviendront les vraies sources. Question posée, pas encore tranchée : est-ce
-  bien le sens du rose, et les cotes existent-elles déjà quelque part ?
+- **Les cotes des actes détenus.** Le rose de la feuille veut bien dire « acte
+  détenu » — confirmé par Guillaume le 5 septembre 2026. Ce sont ces
+  événements-là qui deviendront les vraies sources, une par acte, avec sa cote.
+
+  Les cotes, elles, restent à obtenir, et **les marques roses restent à relever**.
+  Je ne les ai pas transcrites : il y en a une trentaine, minuscules, à côté des
+  symboles `°` `†` `□` `x`, et me tromper sur une seule ferait dire à l'app qu'un
+  acte est détenu alors qu'il ne l'est pas — une affirmation fausse, exactement ce
+  que le projet refuse. À faire à deux, sur le scan, quand les cotes arriveront.
+
+  En attendant, tout ce qui a été importé cite le tableau lui-même : une source
+  secondaire honnête, que les actes viendront remplacer événement par événement.
 - **Les pages 2 à 9** du tableau 505A, et les autres documents familiaux.
 
 ### Comment traiter ces images quand elles arrivent
