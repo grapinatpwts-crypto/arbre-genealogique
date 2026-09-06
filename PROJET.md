@@ -140,10 +140,29 @@ donc pas dériver.
 
 L'invitation ajoute l'e-mail **tout de suite** dans `membres` et `roles` : la
 personne a accès dès sa première connexion Google, il n'y a pas d'acceptation à
-gérer. `invites` ne sert qu'à afficher « en attente » tant qu'elle ne s'est
-jamais connectée. Le propriétaire ne peut pas se déclasser lui-même — les règles
+gérer. Le propriétaire ne peut pas se déclasser lui-même — les règles
 le refusent, sinon un arbre pourrait se retrouver sans personne pour attribuer
-les rôles.
+les rôles. L'écran ne propose donc pas le geste plutôt que de le laisser échouer
+côté serveur ; un autre propriétaire, lui, le peut.
+
+**Rien n'est envoyé.** Il n'y a pas de serveur pour poster un courriel, et
+l'écran le dit : « prévenez la personne vous-même ». Un bouton « Renvoyer
+l'invitation », comme sur la maquette, promettrait quelque chose que l'app ne
+fait pas.
+
+**`invites` reste inutilisé** (6 septembre 2026). Le champ devait porter le badge
+« en attente » des membres jamais connectés — sauf que l'app n'a aucun moyen
+d'observer une première connexion : un lecteur n'a pas le droit d'écrire, et un
+éditeur ne peut toucher qu'à `nom` et `resume`. Il faudrait une règle de plus,
+autorisant chacun à retirer sa propre adresse d'`invites`. En attendant, l'écran
+n'affiche pas ce badge : une pastille « en attente » qui ne saurait pas si la
+personne est venue serait une affirmation sans source, exactement ce que ce
+projet refuse. Le champ reste au modèle, il ne coûte rien.
+
+Les clés de `roles` étant des e-mails, l'écran **remplace la map entière** à
+chaque changement au lieu d'écrire un chemin `roles.<email>` — voir § 7. C'est
+aussi le seul moyen d'en retirer une clé sans `deleteField`. La contrepartie est
+assumée : deux propriétaires qui modifient les rôles en même temps s'écrasent.
 
 ## 5. Écrans
 
@@ -162,9 +181,11 @@ Maquettes cliquables : canevas Claude Design, sources dans `design/*.dc.html`.
    la personne est décédée.
 6. **Rattacher** — on choisit d'abord le lien (père, mère, conjoint, enfant,
    fratrie), puis la personne : existante ou créée dans la foulée.
-7. **Membres & partage** — invitation par e-mail, changement de rôle. *Dessiné,
-   pas construit : il n'y a encore personne à inviter, et l'onglet n'existe donc
-   pas dans la barre de navigation.*
+7. **Membres & partage** — quatrième onglet. Liste des membres, rôle en
+   insigne ; toucher une ligne déplie le réglage de rôle sous elle, avec ce que
+   ce rôle autorise et un retrait en deux temps. Le bloc d'invitation n'apparaît
+   qu'au propriétaire ; les autres voient la liste et les explications, rien de
+   plus. Voir § 4 pour ce qui n'est volontairement pas construit.
 8. **Sources** — liste filtrable par type d'acte.
 9. **Import** — atteignable par le menu ⋯ de la vue de l'arbre. Voir § 6.
 

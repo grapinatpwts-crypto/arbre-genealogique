@@ -66,8 +66,12 @@ Canevas des maquettes : https://claude.ai/code/artifact/d6ff23ed-061d-4d17-b32e-
    de sa spécification `DESIGN-LIGNEE.md`, dont le § 11 liste les écarts que les
    vraies données ont imposés. Reste à faire porter les **lacunes** par le modèle
    (« registres détruits en 1793 ») : le rendu existe, l'information non.
-4. **Membres & partage** — l'écran est dessiné, pas construit ; il le sera quand
-   il y aura quelqu'un à inviter.
+4. ~~Membres & partage~~ — fait le 6 septembre 2026. Quatrième onglet : liste
+   des membres, changement de rôle, invitation, retrait. Deux choses n'y sont
+   volontairement pas, et `PROJET.md` § 4 dit pourquoi : le badge « en attente »
+   (l'app ne peut pas observer une première connexion sans une règle de plus) et
+   le bouton « Renvoyer l'invitation » de la maquette (rien n'est envoyé, il n'y
+   a pas de serveur pour ça).
 5. **Import GEDCOM** — pas commencé, c'est ce qui permettra de récupérer un arbre
    existant depuis Geneanet.
 

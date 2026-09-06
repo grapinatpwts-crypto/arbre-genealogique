@@ -201,6 +201,22 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
 .filtres button { height: 34px; padding: 0 13px; border: 1px solid var(--filet-fonce); background: none; color: var(--encre-2); border-radius: 999px; font-size: 12.5px; font-weight: 600; cursor: pointer; white-space: nowrap; flex: 0 0 auto; }
 .filtres button.actif { background: var(--encre-2); border-color: var(--encre-2); color: var(--creme); }
 
+/* ── Membres & partage ────────────────────────────────────────────── */
+.membre { border-bottom: 1px solid var(--filet-clair); }
+.membre > button { display: flex; align-items: center; gap: 12px; padding: 13px 0; width: 100%; background: none; border: 0; text-align: left; cursor: pointer; }
+.membre .qui { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+/* Les deux lignes se coupent, pas seulement la seconde : une adresse un peu
+   longue passait sous l'insigne de rôle et devenait illisible. */
+.membre .qui b, .membre .qui small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.membre .qui b { font-size: 15px; font-weight: 500; line-height: 1.2; }
+.membre .qui small { font-size: 11.5px; color: var(--encre-4); }
+.membre .insigne { font-size: 9.5px; letter-spacing: .13em; text-transform: uppercase; font-weight: 700; border-radius: 2px; padding: 6px 8px; white-space: nowrap; flex: 0 0 auto; }
+/* `[hidden]` perd contre une règle de classe : sans cette ligne, le réglage de
+   rôle resterait ouvert sous tous les membres à la fois (voir PROJET.md § 7). */
+.membre .reglages { display: flex; flex-direction: column; gap: 9px; padding: 0 0 14px; }
+.membre .reglages[hidden] { display: none; }
+.membre .reglages p { margin: 0; font-size: 11.5px; color: var(--encre-4); line-height: 1.45; }
+
 /* ── Barre d'onglets ──────────────────────────────────────────────── */
 .onglets { display: flex; padding: 8px 6px 0; background: var(--creme); border-top: 1px solid var(--filet-clair); }
 .onglets button { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px 0; cursor: pointer; background: none; border: 0; color: var(--encre-5); }
@@ -383,6 +399,32 @@ h1, h2, .serif { font-family: 'EB Garamond', Georgia, serif; font-weight: 600; }
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9A5233" stroke-width="1.8" stroke-linecap="square"><path d="M12 5v14M5 12h14"/></svg>
       Ajouter une source
     </button>
+  </div>
+  <nav class="onglets bas" data-onglets></nav>
+</section>
+
+<!-- ══ Membres & partage ═══════════════════════════════════════════ -->
+<section class="ecran" id="ec-membres">
+  <div class="haut" style="padding-left: 20px; padding-right: 20px; padding-bottom: 14px; display: flex; flex-direction: column; gap: 6px">
+    <span class="surtitre" id="surtitre-membres"></span>
+    <h1 style="font-size: 34px; line-height: 1.05; margin: 0">Membres &amp; partage</h1>
+  </div>
+  <div class="defile" style="padding: 0 20px" id="liste-membres"></div>
+  <div id="bloc-invitation" style="padding: 14px 20px 10px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--filet-clair)">
+    <span class="surtitre">Inviter quelqu'un</span>
+    <label class="champ"><input id="f-invite-email" type="email" inputmode="email"
+      placeholder="Adresse du compte Google" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+    <div style="display: flex; gap: 10px; align-items: flex-end">
+      <label class="champ"><select id="f-invite-role">
+        <option value="lecteur">Lecteur</option>
+        <option value="editeur">Éditeur</option>
+        <option value="proprietaire">Propriétaire</option>
+      </select></label>
+      <button class="bouton" id="b-inviter" style="width: 108px; flex: 0 0 auto">Inviter</button>
+    </div>
+    <p style="font-size: 11.5px; color: var(--encre-4); line-height: 1.5; margin: 0">
+      L'app n'envoie aucun courriel&nbsp;: prévenez la personne vous-même. Elle aura
+      accès dès sa première connexion avec ce compte Google, sans rien à accepter.</p>
   </div>
   <nav class="onglets bas" data-onglets></nav>
 </section>
@@ -573,6 +615,8 @@ const app = {
   fiche: null,          // personne affichée en fiche
   volet: 'civil',       // onglet de la fiche
   filtreSource: 'tous',
+  membreOuvert: null,   // e-mail du membre dont le réglage de rôle est déplié
+  retraitArme: null,    // e-mail dont le retrait attend une confirmation
   pile: []              // écrans empilés, pour le bouton retour
 };
 
@@ -868,11 +912,12 @@ async function majResume() {
 
 /* ── Navigation entre écrans ─────────────────────────────────────────── */
 
-const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'fiche', 'edition', 'rattacher', 'import'];
+const ECRANS = ['chargement', 'connexion', 'arbre', 'personnes', 'sources', 'membres', 'fiche', 'edition', 'rattacher', 'import'];
 const ONGLETS = [
   { id: 'arbre', nom: 'Lignée', icone: 'M12 21v-6M6 15v-4M18 15v-4M6 11h12M6 11V7M18 11V7M9 3h6v4H9z' },
   { id: 'personnes', nom: 'Personnes', icone: 'M9 11a3 3 0 100-6 3 3 0 000 6zM3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M17 8h4M19 6v4' },
-  { id: 'sources', nom: 'Sources', icone: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4' }
+  { id: 'sources', nom: 'Sources', icone: 'M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h4' },
+  { id: 'membres', nom: 'Membres', icone: 'M8 11a3 3 0 100-6 3 3 0 000 6zM2 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 5.5a3 3 0 010 5.8M18 14.2c2.4.7 4 2.9 4 5.8' }
 ];
 let ecranActuel = 'chargement';
 
@@ -903,6 +948,7 @@ function construireOnglets() {
       montrer(b.dataset.onglet, false);
       if (b.dataset.onglet === 'personnes') rendrePersonnes();
       if (b.dataset.onglet === 'sources') rendreSources();
+      if (b.dataset.onglet === 'membres') rendreMembres();
     };
   }
 }
@@ -1543,6 +1589,169 @@ function rendreSources() {
       'Aucune source pour le moment. Une source, c\'est un acte&nbsp;: son titre, son type et sa cote.') + '</p>';
 
   $('#b-nouvelle-source').hidden = !peutEcrire();
+}
+
+/* ══ Membres & partage ════════════════════════════════════════════════
+   Porté de la maquette « Membres ». Toucher un membre ouvre son réglage sous
+   sa ligne : pas de menu flottant, et l'écran dit ce que le rôle autorise au
+   moment où on le choisit.
+
+   Il n'y a pas d'invitation à accepter. Le propriétaire ajoute une adresse,
+   `firestore.rules` la reconnaît dès la première connexion Google, et c'est
+   tout. Rien n'est envoyé — l'app n'a pas de serveur pour poster un courriel,
+   et le dire est plus honnête que de faire semblant. */
+
+const ROLES = [
+  ['proprietaire', 'Propriétaire', 'Saisit, invite et change les rôles.',
+   "Saisit, invite, change les rôles et peut supprimer l'arbre."],
+  ['editeur', 'Éditeur', 'Saisit personnes, unions et sources.',
+   "Saisit les personnes, les unions et les sources. N'invite personne."],
+  ['lecteur', 'Lecteur', 'Consulte, sans rien modifier.',
+   'Consulte l\'arbre et les sources, sans rien pouvoir modifier.']
+];
+const TEINTES_ROLE = {
+  proprietaire: { encre: '#7A3F26', fond: '#EFE0D5' },
+  editeur:      { encre: '#33507E', fond: '#DFE5F0' },
+  lecteur:      { encre: '#6E6357', fond: '#E8E1D3' }
+};
+function roleDefini(r) { return ROLES.find(x => x[0] === r) || ROLES[2]; }
+
+/* On n'a que l'adresse : les initiales s'en déduisent, le nom non. Afficher
+   « Guillaume Rapinat » à partir de guillaume.rapinat@… serait une supposition
+   sur une personne, et ce n'est pas ce que fait cette app. */
+function initialesDe(email) {
+  const mots = String(email || '').split('@')[0].split(/[._\-+]+/).filter(Boolean);
+  return ((mots[0] || '?')[0] + (mots[1] ? mots[1][0] : '')).toUpperCase();
+}
+
+function estProprietaire() { return app.role === 'proprietaire'; }
+
+function rendreMembres() {
+  const roles = (app.arbre && app.arbre.roles) || {};
+  const patron = estProprietaire();
+  $('#surtitre-membres').textContent = (app.arbre && app.arbre.nom) || '';
+  $('#bloc-invitation').hidden = !patron;
+
+  const rang = (r) => ROLES.findIndex(x => x[0] === r);
+  const emails = Object.keys(roles).sort((a, b) =>
+    (rang(roles[a]) - rang(roles[b])) || a.localeCompare(b));
+
+  $('#liste-membres').innerHTML = emails.map(email => {
+    const soi = email === app.email;
+    const def = roleDefini(roles[email]);
+    const t = TEINTES_ROLE[def[0]];
+    const ouvert = app.membreOuvert === email;
+
+    // La ligne coupe l'adresse pour tenir : le panneau la redonne en entier,
+    // sinon le domaine d'un membre resterait invérifiable.
+    const adresse = '<p style="color: var(--encre-3); white-space: normal; word-break: break-word">' +
+      ech(email) + '</p>';
+    let corps;
+    if (!patron) {
+      corps = '<p>' + ech(def[3]) + '</p>';
+    } else if (soi) {
+      // La règle refuse qu'un propriétaire se déclasse lui-même : l'arbre se
+      // retrouverait sans personne pour attribuer les rôles. Mieux vaut ne pas
+      // proposer le geste que le laisser échouer côté serveur.
+      corps = '<p>C\'est vous. Un propriétaire ne peut ni se déclasser ni se retirer' +
+        ' lui-même&nbsp;: l\'arbre resterait sans personne pour attribuer les rôles.' +
+        ' Un autre propriétaire, lui, le peut.</p>';
+    } else if (app.retraitArme === email) {
+      corps = '<p>Retirer cette personne lui coupe l\'accès à l\'instant même.' +
+        ' Rien de ce qui a été saisi n\'est perdu.</p>' +
+        '<div style="display: flex; gap: 10px">' +
+        '<button class="bouton creux" style="flex: 1 1 0" data-retrait-annuler>Annuler</button>' +
+        '<button class="bouton" style="flex: 1 1 0" data-retrait-oui="' + ech(email) + '">Retirer</button></div>';
+    } else {
+      corps =
+        '<div class="segments">' + ROLES.map(r =>
+          '<button' + (r[0] === def[0] ? ' class="actif"' : '') +
+          ' data-role="' + r[0] + '" data-role-pour="' + ech(email) + '">' + ech(r[1]) + '</button>').join('') +
+        '</div>' +
+        '<p>' + ech(def[3]) + '</p>' +
+        '<button class="lien" style="align-self: flex-start; font-size: 12.5px" data-retrait="' + ech(email) + '">Retirer de l\'arbre</button>';
+    }
+
+    corps = adresse + corps;
+
+    return '<div class="membre">' +
+      '<button data-membre="' + ech(email) + '">' +
+      '<span class="pastille" style="background: ' + t.fond + '; border-color: ' + t.fond + '; color: ' + t.encre + '">' +
+      ech(initialesDe(email)) + '</span>' +
+      '<span class="qui"><b>' + ech(email) + '</b><small>' +
+      (soi ? 'C\'est vous' : ech(def[2])) + '</small></span>' +
+      '<span class="insigne" style="color: ' + t.encre + '; background: ' + t.fond + '">' + ech(def[1]) + '</span>' +
+      '</button>' +
+      '<div class="reglages"' + (ouvert ? '' : ' hidden') + '>' + corps + '</div></div>';
+  }).join('');
+}
+
+/* Les clés de `roles` sont des e-mails : `updateDoc({ ['roles.' + email]: r })`
+   découperait sur les points du domaine et écrirait n'importe où (PROJET.md § 7).
+   On remplace donc la map entière — on l'a de toute façon en mémoire, et c'est
+   aussi le seul moyen d'en retirer une clé sans `deleteField`. */
+async function enregistrerMembres(roles, membres) {
+  await FB.updateDoc(refArbre(), {
+    roles, membres, maj_par: app.email, maj_le: FB.serverTimestamp()
+  });
+  app.arbre.roles = roles;
+  app.arbre.membres = membres;
+  app.role = roles[app.email] || app.role;
+}
+
+function copieRoles() { return Object.assign({}, (app.arbre && app.arbre.roles) || {}); }
+function copieMembres() { return ((app.arbre && app.arbre.membres) || []).slice(); }
+
+async function changerRole(email, role) {
+  if (!estProprietaire()) return alerte('Seul un propriétaire peut changer les rôles.');
+  if (email === app.email) return alerte('Vous ne pouvez pas changer votre propre rôle.');
+  const roles = copieRoles();
+  if (roles[email] === role) return;
+  roles[email] = role;
+  const membres = copieMembres();
+  if (!membres.includes(email)) membres.push(email);
+  await enregistrerMembres(roles, membres);
+  rendreMembres();
+  alerte(email + ' est maintenant ' + roleDefini(role)[1].toLowerCase() + '.');
+}
+
+async function retirerMembre(email) {
+  if (!estProprietaire()) return alerte('Seul un propriétaire peut retirer un membre.');
+  if (email === app.email) return alerte('Vous ne pouvez pas vous retirer vous-même.');
+  const roles = copieRoles();
+  delete roles[email];
+  await enregistrerMembres(roles, copieMembres().filter(m => m !== email));
+  app.retraitArme = null;
+  app.membreOuvert = null;
+  rendreMembres();
+  alerte(email + " n'a plus accès à l'arbre.");
+}
+
+async function inviter() {
+  if (!estProprietaire()) return alerte('Seul un propriétaire peut inviter.');
+  const email = ($('#f-invite-email').value || '').trim().toLowerCase();
+  const role = $('#f-invite-role').value;
+  // Les règles identifient par `request.auth.token.email.lower()` : une adresse
+  // saisie avec une majuscule ne correspondrait à aucun jeton, et le refus
+  // arriverait plus tard, sans rien pour l'expliquer.
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) {
+    return alerte("Cette adresse ne ressemble pas à une adresse électronique.");
+  }
+  const roles = copieRoles();
+  if (roles[email]) {
+    app.membreOuvert = email;
+    rendreMembres();
+    return alerte(email + ' est déjà membre — son rôle se change dans la liste.');
+  }
+  roles[email] = role;
+  const membres = copieMembres();
+  membres.push(email);
+  await enregistrerMembres(roles, membres);
+  $('#f-invite-email').value = '';
+  app.membreOuvert = email;
+  rendreMembres();
+  alerte(email + ' a maintenant accès en ' + roleDefini(role)[1].toLowerCase() +
+    '. Prévenez cette personne : rien ne part d\'ici.');
 }
 
 /* ══ Édition ══════════════════════════════════════════════════════════
@@ -2397,6 +2606,25 @@ function brancherTout() {
   $('#b-nouvelle-personne').onclick = () => ouvrirEditionPersonne(null);
   $('#b-nouvelle-source').onclick = () => ouvrirEditionSource(null);
   $('#rech-personnes').oninput = rendrePersonnes;
+
+  $('#b-inviter').onclick = () => inviter().catch(e => alerte(expliquer(e)));
+  $('#f-invite-email').onkeydown = (e) => { if (e.key === 'Enter') $('#b-inviter').click(); };
+  $('#liste-membres').onclick = (e) => {
+    const seg = e.target.closest('[data-role-pour]');
+    if (seg) return changerRole(seg.dataset.rolePour, seg.dataset.role).catch(x => alerte(expliquer(x)));
+    const arme = e.target.closest('[data-retrait]');
+    if (arme) { app.retraitArme = arme.dataset.retrait; return rendreMembres(); }
+    if (e.target.closest('[data-retrait-annuler]')) { app.retraitArme = null; return rendreMembres(); }
+    const oui = e.target.closest('[data-retrait-oui]');
+    if (oui) return retirerMembre(oui.dataset.retraitOui).catch(x => alerte(expliquer(x)));
+    const ligne = e.target.closest('[data-membre]');
+    if (ligne) {
+      const email = ligne.dataset.membre;
+      app.membreOuvert = app.membreOuvert === email ? null : email;
+      app.retraitArme = null;
+      rendreMembres();
+    }
+  };
   $('#rech-rattacher').oninput = rendreCandidats;
   $('#b-valider-lien').onclick = () => validerRattachement();
 
