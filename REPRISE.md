@@ -137,9 +137,11 @@ l'ascendance des Sosa 8 à 13, jusqu'aux arrière-arrière-grands-parents (Sosa 
 à 111). Transcrites et relues ; les lectures douteuses sont listées à côté du
 collage plutôt que devinées, et les cases illisibles restent vides.
 
-Ces pages ont fait apparaître un défaut de l'import qui ne se voyait pas sur la
-page 1 : la ligne `ALIAS` ne raccordait rien (voir `PROJET.md` § 7). Corrigé le
-même jour.
+Ces pages ont fait apparaître deux défauts de l'import qui ne se voyaient pas
+sur la page 1, corrigés le même jour : la ligne `ALIAS` ne raccordait rien (voir
+`PROJET.md` § 7), et le format n'avait pas de colonne `notes` — les phrases que
+les tableaux portent en marge (« Remariée en 1905 », « Non mariée ») mouraient
+au bord du collage.
 
 **Restent à obtenir :**
 

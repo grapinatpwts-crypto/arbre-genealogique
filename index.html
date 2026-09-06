@@ -1997,6 +1997,7 @@ async function basculerSource(idSource) {
      SOURCE | titre | type | cote
      P      | sosa | nom | prénoms | sexe | profession
               | naiss_date | naiss_lieu | déces_date | déces_lieu | inhum_date | inhum_lieu
+              | notes
      X      | sosa pair | date | lieu          ← mariage du couple (sosa, sosa+1)
      X      | sosa pair | non marié            ← l'absence attestée, pas l'ignorance
      C      | sosa | nom | prénoms | sexe | date | lieu   ← conjoint hors ascendance
@@ -2010,7 +2011,7 @@ async function basculerSource(idSource) {
    page 1, la même personne y portant deux numéros Sosa différents. */
 
 const CHAMPS_P = ['sosa', 'nom', 'prenoms', 'sexe', 'profession',
-                  'n_date', 'n_lieu', 'd_date', 'd_lieu', 'i_date', 'i_lieu'];
+                  'n_date', 'n_lieu', 'd_date', 'd_lieu', 'i_date', 'i_lieu', 'notes'];
 
 function evenementImporte(dateBrute, lieu, sources) {
   const d = (dateBrute || '').trim(), l = (lieu || '').trim();
@@ -2060,7 +2061,7 @@ function analyserImport(texte) {
       if (!v.nom && !v.prenoms) { plan.erreurs.push(ou + 'ni nom ni prénoms.'); continue; }
       plan.personnes.set(sosa, {
         sosa, nom: v.nom, nom_naissance: '', prenoms: v.prenoms, sexe,
-        profession: v.profession, notes: '',
+        profession: v.profession, notes: v.notes,
         naissance: evenementImporte(v.n_date, v.n_lieu),
         deces: evenementImporte(v.d_date, v.d_lieu),
         inhumation: evenementImporte(v.i_date, v.i_lieu),
@@ -2241,9 +2242,13 @@ async function appliquerImport(plan) {
   }
   for (const p of Array.from(plan.personnes.values()).sort((a, b) => a.sosa - b.sosa)) {
     const ref = refDe(plan, p.sosa);
+    // Un collage muet sur les notes ne dit pas « pas de notes », il ne dit rien :
+    // un réimport écrasait alors ce qui avait été ajouté à la main depuis, en
+    // silence. Les notes du collage remplacent, son silence conserve.
+    const dejaLa = parRef.get(ref) ? (app.personnes.get(parRef.get(ref)) || {}).notes || '' : '';
     const corps = {
       nom: p.nom, nom_naissance: '', prenoms: p.prenoms, sexe: p.sexe,
-      profession: p.profession, notes: '',
+      profession: p.profession, notes: p.notes || dejaLa,
       naissance: avecSource(p.naissance) || { date: '', date_texte: '', lieu: '', sources: [] },
       deces: avecSource(p.deces), inhumation: avecSource(p.inhumation),
       ref_import: ref
@@ -2285,7 +2290,8 @@ async function appliquerImport(plan) {
   const poserUnion = async (idA, idB, evenement, note) => {
     if (!idA || !idB) return;
     const deja = unionsDe(idA).find(u => (u.conjoints || []).includes(idB));
-    const corps = { conjoints: [idA, idB], mariage: avecSource(evenement), divorce: null, notes: note || '' };
+    const corps = { conjoints: [idA, idB], mariage: avecSource(evenement), divorce: null,
+                    notes: note || (deja && deja.notes) || '' };
     if (deja) {
       await FB.updateDoc(refDoc('unions', deja.id), Object.assign({}, corps, tampon(false)));
       Object.assign(deja, corps);

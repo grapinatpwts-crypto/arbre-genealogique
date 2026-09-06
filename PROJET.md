@@ -179,6 +179,7 @@ PAGE   | 505A-p1
 SOURCE | titre | type | cote
 P      | sosa | nom | prénoms | sexe | profession
          | naiss_date | naiss_lieu | déces_date | déces_lieu | inhum_date | inhum_lieu
+         | notes
 X      | sosa pair | date | lieu     ← mariage du couple (sosa, sosa+1)
 X      | sosa pair | non marié       ← l'absence attestée, pas l'ignorance
 C      | sosa | nom | prénoms | sexe | date | lieu   ← conjoint hors ascendance
@@ -192,6 +193,13 @@ qu'un lien contredise un numéro.
 
 Une date qui n'est pas au format `AAAA-MM-JJ` part telle quelle dans
 `date_texte` : « vers 1899 » se recopie, il ne se convertit pas.
+
+La colonne `notes` a été ajoutée le 6 septembre 2026, en transcrivant les pages
+2 à 7 : les tableaux portent en marge des faits qui n'entrent dans aucune case —
+« Remariée en 1905 », « Non mariée », « décès pas trouvé ». Sans elle, ces
+phrases-là mouraient au bord du collage. Un collage muet sur les notes ne dit
+pas « pas de notes », il ne dit rien : un réimport **conserve** donc celles qui
+ont été saisies à la main, il ne les écrase que si le collage en apporte.
 
 Tous les événements d'un collage citent la source déclarée en tête. Un tableau
 est une source secondaire, `type: 'autre'` — pas un acte. Les actes viendront
