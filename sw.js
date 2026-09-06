@@ -4,7 +4,7 @@
  * cache hors ligne (persistentLocalCache, voir le module d'amorçage d'index.html).
  * Incrémentez CACHE à chaque mise en ligne, sinon la PWA garde l'ancienne coquille.
  */
-const CACHE = 'filiation-v7';
+const CACHE = 'filiation-v8';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {

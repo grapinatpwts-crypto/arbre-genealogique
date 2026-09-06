@@ -2013,6 +2013,15 @@ async function basculerSource(idSource) {
 const CHAMPS_P = ['sosa', 'nom', 'prenoms', 'sexe', 'profession',
                   'n_date', 'n_lieu', 'd_date', 'd_lieu', 'i_date', 'i_lieu', 'notes'];
 
+/* Combien de colonnes chaque mot-clé accepte, la sienne non comprise. Une
+   colonne en trop passait inaperçue — `CHAMPS_P.forEach` ignore ce qui dépasse,
+   et les autres lignes lisent leurs champs par indice. Le jour où le format a
+   gagné la colonne `notes`, un collage écrit pour la nouvelle version s'est
+   importé sans un bruit dans l'ancienne, en laissant les notes au bord de la
+   route : rien de cassé, rien de signalé, une information perdue. Un refus vaut
+   mieux qu'un silence. */
+const MAX_CHAMPS = { PAGE: 1, SOURCE: 4, P: CHAMPS_P.length, X: 3, C: 6, ALIAS: 2 };
+
 function evenementImporte(dateBrute, lieu, sources) {
   const d = (dateBrute || '').trim(), l = (lieu || '').trim();
   if (!d && !l) return null;
@@ -2036,6 +2045,16 @@ function analyserImport(texte) {
     const champs = brute.split('|').map(c => c.trim());
     const mot = champs[0].toUpperCase();
     const ou = 'ligne ' + (i + 1) + ' : ';
+
+    // Les colonnes vides de fin ne coûtent rien et ne comptent pas : c'est une
+    // colonne en trop *qui porte quelque chose* qu'on refuse.
+    let derniere = champs.length - 1;
+    while (derniere > 0 && !champs[derniere]) derniere--;
+    if (MAX_CHAMPS[mot] !== undefined && derniere > MAX_CHAMPS[mot]) {
+      plan.erreurs.push(ou + mot + ' à ' + derniere + ' colonnes, le format en attend ' +
+        MAX_CHAMPS[mot] + ' au plus. Collage écrit pour une autre version de l\'app ?');
+      continue;
+    }
 
     if (mot === 'PAGE') {
       plan.page = champs[1] || '';

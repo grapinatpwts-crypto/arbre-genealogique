@@ -244,6 +244,15 @@ laisserait un arbre à moitié faux, et il n'y a pas d'annulation.
   (`plan.rattachements`) : les parents d'une personne aliassée s'**ajoutent** aux
   siens au lieu de les remplacer, la page qui l'a créée restant seule maîtresse
   du reste de sa fiche.
+- **Une colonne en trop dans un collage était ignorée en silence.**
+  `CHAMPS_P.forEach` ignore ce qui dépasse, et les autres lignes lisent leurs
+  champs par indice. Le jour où le format a gagné la colonne `notes`, un collage
+  écrit pour la nouvelle version s'est importé sans un bruit dans l'ancienne, en
+  laissant les notes au bord de la route : rien de cassé, rien de signalé, une
+  information perdue. `MAX_CHAMPS` refuse maintenant la ligne — les colonnes
+  vides de fin ne comptant pas, c'est bien une colonne *qui porte quelque chose*
+  qu'on rejette. Le message nomme la vraie cause : « collage écrit pour une autre
+  version de l'app ? »
 - **Les règles ne détectent pas un cycle de filiation.** Rien n'empêche quelqu'un
   de devenir son propre aïeul par une fausse manip. La vérification se fait côté
   client, avant écriture, en parcourant l'ascendance déjà en mémoire.
